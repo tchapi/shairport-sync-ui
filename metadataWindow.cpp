@@ -152,7 +152,7 @@ void metadataWindow::initialise_track_object()
 
 void metadataWindow::updateUI()
 {
-    printf("Updating UI");
+    cout << "Updating UI\n";
     title_label->setText(QString::fromStdString(track.title));
     artist_label->setText(QString::fromStdString(track.artist));
     release_label->setText(QString::fromStdString(track.release));
@@ -174,20 +174,22 @@ void metadataWindow::updateUI()
 
 void metadataWindow::onData()
 {
-    printf("Metadata received ...");
+    cout << "Metadata received ...\n";
     QTextStream qin(stdin);
-    printf("Reading line ...");
+    cout << "Reading line ...\n";
     QString line = qin.readLine();
-    printf("Emitting event ...");
-    emit dataReceived(line);
+    cout << "Line: %s" << line.toStdString();
+    cout << "Emitting event ...\n";
+    emit dataReceived(line.toStdString().c_str());
 }
 
-void metadataWindow::dataReceived(QString message)
+void metadataWindow::dataReceived(const char *message)
 {
-    printf("Processing metadata ...");
+    cout << "Processing metadata ...\n";
+
     uint32_t type,code,length;
     char tagend[1024];
-    int ret = sscanf(message.toAscii().data(),"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
+    int ret = sscanf(message,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
     if (ret==3) {
         // now, think about processing the tag.
         // basically, we need to get hold of the base-64 data, if any
@@ -279,7 +281,7 @@ void metadataWindow::dataReceived(QString message)
             }
         }
     } else {
-        printf("\nXXX Could not decipher: \"%s\".\n",message.toAscii().data());
+        printf("\nXXX Could not decipher: \"%s\".\n",message);
     }
     
     updateUI();

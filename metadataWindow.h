@@ -4,11 +4,14 @@
 #define METADATAWINDOW_H
 
 #include <QtGui>
+
 #include <string.h>
+#include <iostream>
 #include <stdint.h>
 #include <arpa/inet.h>
 
 using std::string;
+using std::cout;
 
 struct Track {
     string title;
@@ -59,7 +62,7 @@ class metadataWindow : public QWidget
     void updateUI();
 
     void initialise_track_object();
-    void dataReceived(QString message);
+    void dataReceived(const char *message);
 
     QSocketNotifier *streamReader;
 
