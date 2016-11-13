@@ -5,6 +5,7 @@
 
 #include <QtGui>
 #include <string.h>
+#include <stdint.h>
 
 using std::string;
 
