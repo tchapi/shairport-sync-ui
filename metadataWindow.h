@@ -6,6 +6,7 @@
 #include <QtGui>
 #include <string.h>
 #include <stdint.h>
+#include <arpa/inet.h>
 
 using std::string;
 
