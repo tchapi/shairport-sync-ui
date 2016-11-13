@@ -1,7 +1,7 @@
 #include <QtGui> 
 #include "metadataWindow.h"
 
-void initialise_decoding_table() {
+void metadataWindow::initialise_decoding_table() {
     size_t i;
     for (i = 0; i < 64; i++)
         decoding_table[(unsigned char) encoding_table[i]] = i;
@@ -10,7 +10,7 @@ void initialise_decoding_table() {
 // pass in a pointer to the data, its length, a pointer to the output buffer and a pointer to an int containing its maximum length
 // the actual length will be returned.
 
-char *base64_encode(const unsigned char *data,
+char *metadataWindow::base64_encode(const unsigned char *data,
                     size_t input_length,
                     char *encoded_data,
                     size_t *output_length) {
@@ -45,7 +45,7 @@ char *base64_encode(const unsigned char *data,
 
 // pass in a pointer to the data, its length, a pointer to the output buffer and a pointer to an int containing its maximum length
 // the actual length will be returned.
-int base64_decode(const char *data,
+int metadataWindow::base64_decode(const char *data,
                   size_t input_length,
                   unsigned char *decoded_data,
                   size_t *output_length) {
@@ -176,7 +176,9 @@ void metadataWindow::onData()
 {
     printf("Metadata received ...");
     QTextStream qin(stdin);
+    printf("Reading line ...");
     QString line = qin.readLine();
+    printf("Emitting event ...");
     emit dataReceived(line);
 }
 

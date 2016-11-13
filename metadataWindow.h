@@ -45,6 +45,16 @@ class metadataWindow : public QWidget
     void onData();
 
   private:
+    void initialise_decoding_table();
+    char *base64_encode(const unsigned char *data,
+                    size_t input_length,
+                    char *encoded_data,
+                    size_t *output_length);
+    int base64_decode(const char *data,
+                  size_t input_length,
+                  unsigned char *decoded_data,
+                  size_t *output_length);
+
     void setupUI();
     void updateUI();
 
@@ -52,7 +62,7 @@ class metadataWindow : public QWidget
     void dataReceived(QString message);
 
     QSocketNotifier *streamReader;
-    
+
     QLabel *title_label;
     QLabel *artist_label;
     QLabel *release_label;

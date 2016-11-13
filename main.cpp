@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     fd_set rfds;
  
     window.setStyleSheet("background-color: black; color: white;");
-    window.show(); //FullScreen();
+    window.showFullScreen();
 
     return app.exec();
 }
