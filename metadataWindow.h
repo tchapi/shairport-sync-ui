@@ -19,7 +19,7 @@ struct Track {
     string release;
     double progress; // between 0 and 1
 };
-
+/*
 // From Stack Overflow, with thanks:
 // http://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
 // minor mods to make independent of C99.
@@ -36,7 +36,7 @@ static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 static int decoding_table[256]; // an incoming char can range over ASCII, but by mistake could be all 8 bits.
 
 static int mod_table[] = {0, 2, 1};
-
+*/
 class metadataWindow : public QWidget
 {
   Q_OBJECT
@@ -48,6 +48,7 @@ class metadataWindow : public QWidget
     void onData();
 
   private:
+    /*
     void initialise_decoding_table();
     char *base64_encode(const unsigned char *data,
                     size_t input_length,
@@ -57,6 +58,9 @@ class metadataWindow : public QWidget
                   size_t input_length,
                   unsigned char *decoded_data,
                   size_t *output_length);
+*/
+    QString base64_encode(QString string);
+    QString base64_decode(QString string);
 
     void setupUI();
     void updateUI();

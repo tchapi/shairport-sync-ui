@@ -1,6 +1,18 @@
 #include <QtGui> 
 #include "metadataWindow.h"
 
+QString metadataWindow::base64_encode(QString string){
+    QByteArray ba;
+    ba.append(string);
+    return ba.toBase64();
+}
+ 
+QString metadataWindow::base64_decode(QString string){
+    QByteArray ba;
+    ba.append(string);
+    return QByteArray::fromBase64(ba);
+}
+/*
 void metadataWindow::initialise_decoding_table() {
     size_t i;
     for (i = 0; i < 64; i++)
@@ -81,10 +93,10 @@ int metadataWindow::base64_decode(const char *data,
     
     return 0;
 }
-
+*/
 metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 {
-    initialise_decoding_table();
+    //initialise_decoding_table();
 
     // Initialize the Track object with empty strings and the like
     initialise_track_object();
@@ -174,113 +186,122 @@ void metadataWindow::updateUI()
 
 void metadataWindow::onData()
 {
-    cout << "Metadata received ...\n";
     QTextStream qin(fd);
     QString line = qin.readLine();
-    //cout << "Line: " << line.toStdString() << "\n";
-    cout << "Emitting event ...\n";
     emit dataReceived(line.toStdString().c_str());
 }
 
 void metadataWindow::dataReceived(const char *message)
 {
-    cout << "Processing metadata ...\n";
+    cout << "\nProcessing new metadata ...\n";
 
     uint32_t type,code,length;
-    char tagend[1024];
+    //char tagend[1024];
+    cout << "Message: " << message << "\n";
     int ret = sscanf(message,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
-    if (ret==3) {
+    
+    // Get code and type strings
+    char typestring[5];
+    *(uint32_t*)typestring = htonl(type);
+    typestring[4] = 0;
+    char codestring[5];
+    *(uint32_t*)codestring = htonl(code);
+    codestring[4] = 0;
+
+    cout << " > Found tag: " << typestring << " / " << codestring << " of length " << length;
+
+    if (ret == 3) {
         // now, think about processing the tag.
         // basically, we need to get hold of the base-64 data, if any
-        size_t outputlength=0;
-        char payload[32769];
-       if (length>0) {
-           // get the next line, which should be a data tag
-           char datatagstart[64],datatagend[64];
-           memset(datatagstart,0,64);
-           int rc = fscanf(fd,"<data encoding=\"base64\">");
-           if (rc==0) {
-               // now, read in that big (possibly) base64 buffer
-               int c = fgetc(fd);
-               uint32_t b64size = 4*((length+2)/3);
-               char * b64buf = new char[b64size+1]; //malloc(b64size+1);
-               memset(b64buf,0,b64size+1);
-               if (b64buf) {
-                   if (fgets(b64buf, b64size+1, fd)!=NULL) {
+        QString payload;
+
+        if (length > 0) {
+            cout << " > Extracting data ..." << "\n";
+
+            // get the next line, which should be a data tag
+            QTextStream qin(fd);
+            QString line = qin.readLine();
+
+            if (line == "<data encoding=\"base64\">") {
+                // now, read in that big (possibly) base64 buffer
+                cout << " > Data is base64 buffer" << "\n";
+
+                QString line = qin.readLine();
+                if (line.size() > 14) {
+                    line.chop(14); // remove "</data></item>"
+                    if (code != 'PICT') {
+                        payload = base64_decode(line);
+                    }
+                } else {
+                    cout << " > Looks like a bad payload" << "\n";
+                }
+
+               // int c = fgetc(fd);
+               // uint32_t b64size = 4*((length+2)/3);
+               // char * b64buf = new char[b64size+1]; //malloc(b64size+1);
+               // memset(b64buf,0,b64size+1);
+               // if (b64buf) {
+                   //if (fgets(b64buf, b64size+1, fd)!=NULL) {
                        // it looks like we got it
-                       printf("Looks like we got it, with a buffer size of %u.\n",b64size);
+                       //printf(" > Looks like we got it, with a buffer size of %u.\n",b64size);
                        //puts(b64buf);
                        //printf("\n");
                        // now, if it's not a picture, let's try to decode it.
-                       if (code!='PICT') {
-                           int inputlength=32678;
-                           if (b64size<inputlength)
-                               inputlength=b64size;
-                           outputlength=32768;
-                           if (base64_decode(b64buf,inputlength,(unsigned char*)payload,&outputlength)!=0) {
-                               printf("Failed to decode it.\n");
-                           }
-                       }
-                   }
-                   free(b64buf);
-               } else {
-                   cout << "Couldn't allocate memory for base-64 stuff\n";
-               }
-               rc = fscanf(fd,"%64s",datatagend);
-               if (strcmp(datatagend,"</data></item>")!=0)
-                   cout << "End data tag not seen, " << datatagend << " seen instead.\n";
+                       // if (code != 'PICT') {
+                       //     int inputlength=32678;
+                       //     if (b64size<inputlength)
+                       //         inputlength=b64size;
+                       //     outputlength=32768;
+                       //     if (base64_decode(b64buf,inputlength,payload,&outputlength)!=0) {
+                       //         printf(" > Failed to decode it.\n");
+                       //     }
+                       // }
+                   // }
+                   // free(b64buf);
+               // } else {
+               //     cout << "Couldn't allocate memory for base-64 stuff\n";
+               // }
+               // rc = fscanf(fd,"%64s",datatagend);
+               // if (strcmp(datatagend,"</data></item>")!=0)
+               //     cout << "End data tag not seen, " << datatagend << " seen instead.\n";
            }
-       }
+        }
        
-        cout << "Got it decoded. Length of decoded string is " << outputlength << " bytes.\n";
-        payload[outputlength]=0;
+        cout << "Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
+
+        //payload[outputlength] = 0;
         
         // this has more information about tags, which might be relevant:
         // https://code.google.com/p/ytrack/wiki/DMAP
-        switch (code) {
-            case 'asal':
-                track.release = payload;
-                cout << "Album Name: " << payload << "\n";
-                break;
-            case 'asar':
-                track.artist = payload;
-                cout << "Artist: " << payload << "\n";
-                break;
-            case 'minm':
-                track.title = payload;
-                cout << "Title: " << payload << "\n";
-                break;
-            case 'asdt':
-                file_type = payload;
-                cout << "File kind: " << payload << "\n";
-                break;
-            case 'PICT':
-                cout << "Picture received, length " << length << " bytes." << "\n";
-                break;
-            case 'clip':
-                client_ip = payload;
-                cout << "Client's IP: " << payload << "\n";
-                break;
-            case 'snam':
-                client_name = payload;
-                cout << "Device Name: " << payload << "\n";
-                break;
-            case 'snua':
-                client_name = payload;
-                cout << "User Agent: " << payload << "\n";
-                break;
-            default: if (type=='ssnc') {
-                char typestring[5];
-                *(uint32_t*)typestring = htonl(type);
-                typestring[4]=0;
-                char codestring[5];
-                *(uint32_t*)codestring = htonl(code);
-                codestring[4]=0;
-                printf("\"%s\" \"%s\": \"%s\".\n",typestring,codestring,payload);
-            }
+        if (code == 'asal') {
+            track.release = payload.toStdString();
+            cout << "Album Name: " << payload.toStdString() << "\n";
+        } else if (code == 'asar') {
+            track.artist = payload.toStdString();
+            cout << "Artist: " << payload.toStdString() << "\n";
+        } else if (code == 'minm') {
+            track.title = payload.toStdString();
+            cout << "Title: " << payload.toStdString() << "\n";
+        } else if (code == 'asdt') {
+            file_type = payload.toStdString();
+            cout << "File kind: " << payload.toStdString() << "\n";
+        } else if (code == 'PICT') {
+            cout << "Picture received, length " << length << " bytes." << "\n";
+        } else if (code == 'clip') {
+            client_ip = payload.toStdString();
+            cout << "Client's IP: " << payload.toStdString() << "\n";
+        } else if (code == 'snam') {
+            client_name = payload.toStdString();
+            cout << "Device Name: " << payload.toStdString() << "\n";
+        } else if (code == 'snua') {
+            client_name = payload.toStdString();
+            cout << "User Agent: " << payload.toStdString() << "\n";
+        } else if (type=='ssnc') {
+            cout << "SSNC Stuff : " << typestring << codestring << " : " << payload.toStdString();
         }
+
     } else {
-        cout << "Could not decipher: " << message << "\n";;
+        cout << "Could not decipher the message.\n";;
     }
     
     updateUI();
