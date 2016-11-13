@@ -131,14 +131,14 @@ void metadataWindow::onData()
 void metadataWindow::dataReceived()
 {
     cout << "\nProcessing new metadata ...\n";
-    
+
     if (pipe->atEnd()) {
         cout << " > No more data to read ...\n";
         return;
     }
 
     QString line = pipe->readLine();
-    if (line.isEmpty() || line.isNull()) {
+    if (line.isEmpty() || line.isNull()) {
         cout << " > Skipping empty line.\n";
         return;
     }

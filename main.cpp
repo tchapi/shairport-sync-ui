@@ -18,8 +18,7 @@ int main(int argc, char *argv[])
     QApplication::setOverrideCursor(Qt::BlankCursor);
 
     metadataWindow window;
-    fd_set rfds;
- 
+    
     window.setStyleSheet("background-color: black; color: white;");
     window.showFullScreen();
 
