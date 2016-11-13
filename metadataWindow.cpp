@@ -104,12 +104,16 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     this->setupUI();
 
     // Connect to the metadata pipe
-    fd = fopen("/tmp/shairport-sync-metadata", "r");
+    FILE *fd = fopen(metadata_file, "r");
     if (fd==NULL)
     {
         printf("No metadata file found");
     }
 
+    // Use for actual reads
+    pipe = new QTextStream(fd);
+
+    // Use for events when the pipe is filled
     streamReader = new QSocketNotifier(fileno(fd), QSocketNotifier::Read, qApp);
     QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
     streamReader->setEnabled(true);
@@ -186,18 +190,22 @@ void metadataWindow::updateUI()
 
 void metadataWindow::onData()
 {
-    QTextStream qin(fd);
-    emit dataReceived(&qin);
+    emit dataReceived();
 }
 
-void metadataWindow::dataReceived(QTextStream *qin)
+void metadataWindow::dataReceived()
 {
     cout << "\nProcessing new metadata ...\n";
-    QString line = qin->readLine();
+    QString line = pipe->readLine();
+    if (line.size() == 0) {
+        cout << " > Skipping empty line.\n";
+        return;
+    }
+
     const char * message = line.toStdString().c_str();
 
     uint32_t type,code,length;
-    //char tagend[1024];
+
     cout << "Message: " << message << "\n";
     int ret = sscanf(message,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
     
@@ -211,7 +219,7 @@ void metadataWindow::dataReceived(QTextStream *qin)
 
     cout << " > Found tag: " << typestring << " / " << codestring << " of length " << length << "\n";
 
-    if (ret == 3) {
+    if (type > 0 && code > 0 && ret == 3) {
         // now, think about processing the tag.
         // basically, we need to get hold of the base-64 data, if any
         QString payload;
@@ -220,15 +228,13 @@ void metadataWindow::dataReceived(QTextStream *qin)
             cout << " > Extracting data ..." << "\n";
 
             // get the next line, which should be a data tag
-            QString line = qin->readLine();
-
-            cout << " > Got line : " << line.toStdString() << "\n";
+            QString line = pipe->readLine();
 
             if (line == "<data encoding=\"base64\">") {
                 // now, read in that big (possibly) base64 buffer
                 cout << " > Data is base64 buffer" << "\n";
 
-                QString line = qin->readLine();
+                QString line = pipe->readLine();
                 if (line.size() > 14) {
                     line.chop(14); // remove "</data></item>"
                     if (code != 'PICT') {
@@ -237,42 +243,11 @@ void metadataWindow::dataReceived(QTextStream *qin)
                 } else {
                     cout << " > Looks like a bad payload" << "\n";
                 }
+            }
 
-               // int c = fgetc(fd);
-               // uint32_t b64size = 4*((length+2)/3);
-               // char * b64buf = new char[b64size+1]; //malloc(b64size+1);
-               // memset(b64buf,0,b64size+1);
-               // if (b64buf) {
-                   //if (fgets(b64buf, b64size+1, fd)!=NULL) {
-                       // it looks like we got it
-                       //printf(" > Looks like we got it, with a buffer size of %u.\n",b64size);
-                       //puts(b64buf);
-                       //printf("\n");
-                       // now, if it's not a picture, let's try to decode it.
-                       // if (code != 'PICT') {
-                       //     int inputlength=32678;
-                       //     if (b64size<inputlength)
-                       //         inputlength=b64size;
-                       //     outputlength=32768;
-                       //     if (base64_decode(b64buf,inputlength,payload,&outputlength)!=0) {
-                       //         printf(" > Failed to decode it.\n");
-                       //     }
-                       // }
-                   // }
-                   // free(b64buf);
-               // } else {
-               //     cout << "Couldn't allocate memory for base-64 stuff\n";
-               // }
-               // rc = fscanf(fd,"%64s",datatagend);
-               // if (strcmp(datatagend,"</data></item>")!=0)
-               //     cout << "End data tag not seen, " << datatagend << " seen instead.\n";
-           }
+            cout << " > Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
         }
        
-        cout << " > Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
-
-        //payload[outputlength] = 0;
-        
         // this has more information about tags, which might be relevant:
         // https://code.google.com/p/ytrack/wiki/DMAP
         if (code == 'asal') {
@@ -299,12 +274,15 @@ void metadataWindow::dataReceived(QTextStream *qin)
             client_name = payload.toStdString();
             cout << "User Agent: " << payload.toStdString() << "\n";
         } else if (type=='ssnc') {
-            cout << "SSNC Stuff : " << typestring << codestring << " : " << payload.toStdString();
+            cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
+        } else {
+            cout << "Other Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         }
 
     } else {
         cout << "Could not decipher the message.\n";;
     }
     
+    pipe->flush();
     updateUI();
 }

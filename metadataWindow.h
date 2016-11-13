@@ -13,6 +13,8 @@
 using std::string;
 using std::cout;
 
+static const char *metadata_file = "/tmp/shairport-sync-metadata";
+
 struct Track {
     string title;
     string artist;
@@ -66,9 +68,9 @@ class metadataWindow : public QWidget
     void updateUI();
 
     void initialise_track_object();
-    void dataReceived(QTextStream *qin);
+    void dataReceived();
 
-    FILE *fd;
+    QTextStream *pipe;
     QSocketNotifier *streamReader;
 
     QLabel *title_label;
