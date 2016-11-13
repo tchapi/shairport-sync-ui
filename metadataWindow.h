@@ -66,7 +66,7 @@ class metadataWindow : public QWidget
     void updateUI();
 
     void initialise_track_object();
-    void dataReceived(const char *message);
+    void dataReceived(QTextStream *qin);
 
     FILE *fd;
     QSocketNotifier *streamReader;

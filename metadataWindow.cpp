@@ -187,13 +187,14 @@ void metadataWindow::updateUI()
 void metadataWindow::onData()
 {
     QTextStream qin(fd);
-    QString line = qin.readLine();
-    emit dataReceived(line.toStdString().c_str());
+    emit dataReceived(&qin);
 }
 
-void metadataWindow::dataReceived(const char *message)
+void metadataWindow::dataReceived(QTextStream *qin)
 {
     cout << "\nProcessing new metadata ...\n";
+    QString line = qin->readLine();
+    const char * message = line.toStdString().c_str();
 
     uint32_t type,code,length;
     //char tagend[1024];
@@ -208,7 +209,7 @@ void metadataWindow::dataReceived(const char *message)
     *(uint32_t*)codestring = htonl(code);
     codestring[4] = 0;
 
-    cout << " > Found tag: " << typestring << " / " << codestring << " of length " << length;
+    cout << " > Found tag: " << typestring << " / " << codestring << " of length " << length << "\n";
 
     if (ret == 3) {
         // now, think about processing the tag.
@@ -219,14 +220,15 @@ void metadataWindow::dataReceived(const char *message)
             cout << " > Extracting data ..." << "\n";
 
             // get the next line, which should be a data tag
-            QTextStream qin(fd);
-            QString line = qin.readLine();
+            QString line = qin->readLine();
+
+            cout << " > Got line : " << line.toStdString() << "\n";
 
             if (line == "<data encoding=\"base64\">") {
                 // now, read in that big (possibly) base64 buffer
                 cout << " > Data is base64 buffer" << "\n";
 
-                QString line = qin.readLine();
+                QString line = qin->readLine();
                 if (line.size() > 14) {
                     line.chop(14); // remove "</data></item>"
                     if (code != 'PICT') {
@@ -267,7 +269,7 @@ void metadataWindow::dataReceived(const char *message)
            }
         }
        
-        cout << "Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
+        cout << " > Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
 
         //payload[outputlength] = 0;
         
