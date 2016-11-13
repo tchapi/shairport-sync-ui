@@ -121,7 +121,7 @@ void metadataWindow::updateUI()
     }
 
     image->convertFromImage(track.image);
-    image_label->setScaledContents(true);
+    image_label->setPixmap(image);
     image_label->update();
 
 }
