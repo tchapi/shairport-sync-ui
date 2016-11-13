@@ -131,10 +131,20 @@ void metadataWindow::onData()
 void metadataWindow::dataReceived()
 {
     cout << "\nProcessing new metadata ...\n";
+    
+    if (pipe->atEnd()) {
+        cout << " > No more data to read ...\n";
+        return;
+    }
+
     QString line = pipe->readLine();
-    if (line.size() == 0) {
+    if (line.isEmpty() || line.isNull()) {
         cout << " > Skipping empty line.\n";
         return;
+    }
+
+    if (line == "<data encoding=\"base64\">") {
+        cout << "How did we get here ???\n";
     }
 
     const char * message = line.toStdString().c_str();
