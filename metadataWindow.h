@@ -19,7 +19,8 @@ struct Track {
     string title;
     string artist;
     string release;
-    double progress; // between 0 and 1
+    QImage image;
+    bool playing;
 };
 /*
 // From Stack Overflow, with thanks:
@@ -81,6 +82,8 @@ class metadataWindow : public QWidget
 
     QFont* standard_font;
     QFont* em_font;
+
+    QPixmap *image;
 
     QPushButton *quit_button;
 

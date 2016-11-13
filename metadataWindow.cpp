@@ -12,88 +12,7 @@ QString metadataWindow::base64_decode(QString string){
     ba.append(string);
     return QByteArray::fromBase64(ba);
 }
-/*
-void metadataWindow::initialise_decoding_table() {
-    size_t i;
-    for (i = 0; i < 64; i++)
-        decoding_table[(unsigned char) encoding_table[i]] = i;
-}
 
-// pass in a pointer to the data, its length, a pointer to the output buffer and a pointer to an int containing its maximum length
-// the actual length will be returned.
-
-char *metadataWindow::base64_encode(const unsigned char *data,
-                    size_t input_length,
-                    char *encoded_data,
-                    size_t *output_length) {
-    
-    size_t calculated_output_length = 4 * ((input_length + 2) / 3);
-    if (calculated_output_length> *output_length)
-        return(NULL);
-    *output_length = calculated_output_length;
-    
-    size_t i,j;
-    for (i = 0, j = 0; i < input_length;) {
-        
-        uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
-        uint32_t octet_b = i < input_length ? (unsigned char)data[i++] : 0;
-        uint32_t octet_c = i < input_length ? (unsigned char)data[i++] : 0;
-        
-        uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
-        
-        encoded_data[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
-    }
-    
-    int k;
-    for (k = 0; k < mod_table[input_length % 3]; k++)
-        encoded_data[*output_length - 1 - k] = '=';
-    
-    return encoded_data;
-}
-
-
-// pass in a pointer to the data, its length, a pointer to the output buffer and a pointer to an int containing its maximum length
-// the actual length will be returned.
-int metadataWindow::base64_decode(const char *data,
-                  size_t input_length,
-                  unsigned char *decoded_data,
-                  size_t *output_length) {
-    
-    //remember somewhere to call initialise_decoding_table();
-    
-    if (input_length % 4 != 0) return -1;
-    
-    size_t calculated_output_length = input_length / 4 * 3;
-    if (data[input_length - 1] == '=') calculated_output_length--;
-    if (data[input_length - 2] == '=') calculated_output_length--;
-    if (calculated_output_length> *output_length)
-        return(-1);
-    *output_length = calculated_output_length;
-    
-    size_t i,j;
-    for (i = 0, j = 0; i < input_length;) {
-        
-        uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        uint32_t sextet_b = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        uint32_t sextet_c = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        uint32_t sextet_d = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
-        
-        uint32_t triple = (sextet_a << 3 * 6)
-        + (sextet_b << 2 * 6)
-        + (sextet_c << 1 * 6)
-        + (sextet_d << 0 * 6);
-        
-        if (j < *output_length) decoded_data[j++] = (triple >> 2 * 8) & 0xFF;
-        if (j < *output_length) decoded_data[j++] = (triple >> 1 * 8) & 0xFF;
-        if (j < *output_length) decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
-    }
-    
-    return 0;
-}
-*/
 metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 {
     //initialise_decoding_table();
@@ -130,6 +49,12 @@ void metadataWindow::setupUI()
     em_font->setPixelSize(12);
     em_font->setItalic(true);
     
+    // Add image
+    image = new QPixmap(100,100);
+    image->fill(QColor("cyan"));
+    QLabel *image_label  = new QLabel(this);
+        image_label->setPixmap(*image);
+
     // Add labels
     title_label = new QLabel("Titre", this);
     title_label->setFont(*standard_font);
@@ -142,12 +67,21 @@ void metadataWindow::setupUI()
     client_ip_label = new QLabel("En streaming depuis 192.168.1.24", this);
     client_ip_label->setFont(*standard_font);
     
+    QVBoxLayout *main_layout = new QVBoxLayout(this);
+
+    QHBoxLayout *hbl = new QHBoxLayout(this);
+
     QVBoxLayout *vbl = new QVBoxLayout(this);
     vbl->addWidget(title_label);
     vbl->addWidget(artist_label);
     vbl->addWidget(release_label);
     vbl->addWidget(file_type_label);
-    vbl->addWidget(client_ip_label);
+
+    hbl->addWidget(image_label);
+    hbl->addLayout(vbl);
+
+    main_layout->addLayout(hbl);
+    main_layout->addWidget(client_ip_label);
 
     // Add "quit" button
     //quit_button = new QPushButton("Quit" , this);
@@ -160,7 +94,6 @@ void metadataWindow::initialise_track_object()
     track.title.clear();
     track.artist.clear();
     track.release.clear();
-    track.progress = -1; // No metadata
     client_ip.clear();
     client_name.clear();
     file_type.clear();
@@ -186,6 +119,8 @@ void metadataWindow::updateUI()
         client_ip_label->setText("Pas de streaming en cours");
         client_ip_label->setFont(*em_font);
     }
+
+    image->convertFromImage(track.image);
 }
 
 void metadataWindow::onData()
@@ -204,9 +139,11 @@ void metadataWindow::dataReceived()
 
     const char * message = line.toStdString().c_str();
 
-    uint32_t type,code,length;
+    uint32_t type, code, length;
+    QImage base64_image;
+    bool ret_pic = false;
 
-    cout << "Message: " << message << "\n";
+    cout << "Message: [" << message << "]\n";
     int ret = sscanf(message,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
     
     // Get code and type strings
@@ -239,6 +176,9 @@ void metadataWindow::dataReceived()
                     line.chop(14); // remove "</data></item>"
                     if (code != 'PICT') {
                         payload = base64_decode(line);
+                    } else {
+                        QByteArray base64Data = line.toAscii();
+                        ret_pic = base64_image.loadFromData(QByteArray::fromBase64(base64Data));
                     }
                 } else {
                     cout << " > Looks like a bad payload" << "\n";
@@ -262,7 +202,8 @@ void metadataWindow::dataReceived()
         } else if (code == 'asdt') {
             file_type = payload.toStdString();
             cout << "File kind: " << payload.toStdString() << "\n";
-        } else if (code == 'PICT') {
+        } else if (code == 'PICT' && ret_pic) {
+            track.image = base64_image;
             cout << "Picture received, length " << length << " bytes." << "\n";
         } else if (code == 'clip') {
             client_ip = payload.toStdString();
@@ -273,6 +214,12 @@ void metadataWindow::dataReceived()
         } else if (code == 'snua') {
             client_name = payload.toStdString();
             cout << "User Agent: " << payload.toStdString() << "\n";
+        } else if (code == 'prms' || code =='pbeg') {
+            track.playing = true;
+            cout << "Started playing" << "\n";
+        } else if (code == 'pend') {
+            track.playing = false;
+            cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         } else {
