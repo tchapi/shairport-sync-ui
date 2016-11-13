@@ -51,6 +51,8 @@ class metadataWindow : public QWidget
     void initialise_track_object();
     void dataReceived(QString message);
 
+    QSocketNotifier *streamReader;
+    
     QLabel *title_label;
     QLabel *artist_label;
     QLabel *release_label;

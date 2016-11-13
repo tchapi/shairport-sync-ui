@@ -93,7 +93,12 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 
     // Connect to STDIN signal
     FILE* f = fopen("/tmp/shairport-sync-metadata", "r");
-    QSocketNotifier *streamReader = new QSocketNotifier(fileno(f), QSocketNotifier::Read, qApp);
+    if (f==NULL)
+    {
+        printf("No metadata file found");
+    }
+
+    streamReader = new QSocketNotifier(fileno(f), QSocketNotifier::Read, qApp);
     QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
     streamReader->setEnabled(true);
 }
@@ -101,7 +106,6 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 
 void metadataWindow::setupUI()
 {
-
     // Create Fonts
     standard_font = new QFont("Courier New");
     standard_font->setPixelSize(12);
@@ -148,6 +152,7 @@ void metadataWindow::initialise_track_object()
 
 void metadataWindow::updateUI()
 {
+    printf("Updating UI");
     title_label->setText(QString::fromStdString(track.title));
     artist_label->setText(QString::fromStdString(track.artist));
     release_label->setText(QString::fromStdString(track.release));
@@ -169,6 +174,7 @@ void metadataWindow::updateUI()
 
 void metadataWindow::onData()
 {
+    printf("Metadata received ...");
     QTextStream qin(stdin);
     QString line = qin.readLine();
     emit dataReceived(line);
@@ -176,6 +182,7 @@ void metadataWindow::onData()
 
 void metadataWindow::dataReceived(QString message)
 {
+    printf("Processing metadata ...");
     uint32_t type,code,length;
     char tagend[1024];
     int ret = sscanf(message.toAscii().data(),"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
