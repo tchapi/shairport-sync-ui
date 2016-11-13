@@ -85,6 +85,7 @@ class metadataWindow : public QWidget
 
     QLabel *image_label;
     QPixmap *image;
+    QSize *size;
 
     QPushButton *quit_button;
 

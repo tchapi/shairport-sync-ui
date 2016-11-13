@@ -50,7 +50,8 @@ void metadataWindow::setupUI()
     em_font->setItalic(true);
     
     // Add image
-    image = new QPixmap(100,100);
+    size = new QSize(100,100);
+    image = new QPixmap(*size);
     image->fill(QColor("cyan"));
     image_label  = new QLabel(this);
         image_label->setPixmap(*image);
@@ -121,6 +122,8 @@ void metadataWindow::updateUI()
     }
 
     image->convertFromImage(track.image);
+    *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
+
     image_label->setPixmap(*image);
     image_label->update();
 
