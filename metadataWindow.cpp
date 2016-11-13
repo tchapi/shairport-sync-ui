@@ -52,7 +52,7 @@ void metadataWindow::setupUI()
     // Add image
     image = new QPixmap(100,100);
     image->fill(QColor("cyan"));
-    QLabel *image_label  = new QLabel(this);
+    image_label  = new QLabel(this);
         image_label->setPixmap(*image);
 
     // Add labels
@@ -121,6 +121,9 @@ void metadataWindow::updateUI()
     }
 
     image->convertFromImage(track.image);
+    image_label->setScaledContents(true);
+    image_label->update();
+
 }
 
 void metadataWindow::onData()
@@ -187,6 +190,8 @@ void metadataWindow::dataReceived()
                     if (code != 'PICT') {
                         payload = base64_decode(line);
                     } else {
+                        cout << " > ## trying to create image !\n";
+                        //cout << line;
                         QByteArray base64Data = line.toAscii();
                         ret_pic = base64_image.loadFromData(QByteArray::fromBase64(base64Data));
                     }

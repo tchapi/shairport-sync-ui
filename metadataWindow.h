@@ -83,6 +83,7 @@ class metadataWindow : public QWidget
     QFont* standard_font;
     QFont* em_font;
 
+    QLabel *image_label;
     QPixmap *image;
 
     QPushButton *quit_button;
