@@ -121,7 +121,7 @@ void metadataWindow::updateUI()
     }
 
     image->convertFromImage(track.image);
-    image_label->setPixmap(image);
+    image_label->setPixmap(*image);
     image_label->update();
 
 }
@@ -194,6 +194,10 @@ void metadataWindow::dataReceived()
                         //cout << line;
                         QByteArray base64Data = line.toAscii();
                         ret_pic = base64_image.loadFromData(QByteArray::fromBase64(base64Data));
+                        if (ret_pic == true) {
+                            cout << " > ## Success !! (" << base64_image.width() << "x" << base64_image.height() << ")" << "\n";
+
+                        }
                     }
                 } else {
                     cout << " > Looks like a bad payload" << "\n";
