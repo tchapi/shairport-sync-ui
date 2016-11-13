@@ -92,13 +92,13 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     this->setupUI();
 
     // Connect to STDIN signal
-    FILE* f = fopen("/tmp/shairport-sync-metadata", "r");
-    if (f==NULL)
+    fd = fopen("/tmp/shairport-sync-metadata", "r");
+    if (fd==NULL)
     {
         printf("No metadata file found");
     }
 
-    streamReader = new QSocketNotifier(fileno(f), QSocketNotifier::Read, qApp);
+    streamReader = new QSocketNotifier(fileno(fd), QSocketNotifier::Read, qApp);
     QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
     streamReader->setEnabled(true);
 }
@@ -175,10 +175,10 @@ void metadataWindow::updateUI()
 void metadataWindow::onData()
 {
     cout << "Metadata received ...\n";
-    QTextStream qin(stdin);
+    QTextStream qin(fd);
     cout << "Reading line ...\n";
     QString line = qin.readLine();
-    cout << "Line: %s" << line.toStdString();
+    cout << "Line: " << line.toStdString() << "\n";
     cout << "Emitting event ...\n";
     emit dataReceived(line.toStdString().c_str());
 }

@@ -64,6 +64,7 @@ class metadataWindow : public QWidget
     void initialise_track_object();
     void dataReceived(const char *message);
 
+    FILE *fd;
     QSocketNotifier *streamReader;
 
     QLabel *title_label;
