@@ -162,13 +162,13 @@ void metadataWindow::initialise_track_object()
 
 void metadataWindow::updateUI()
 {
-    title_label->setText(QString::fromStdString(track.title));
+    SetTextToLabel(title_label,QString::fromStdString(track.title));
     title_label->setFont(*bigger_font);
 
-    artist_label->setText(QString::fromStdString(track.artist));
+    SetTextToLabel(artist_label,QString::fromStdString(track.artist));
     artist_label->setFont(*standard_font);
 
-    release_label->setText(QString::fromStdString(track.release));
+    SetTextToLabel(release_label,QString::fromStdString(track.release));
     release_label->setFont(*standard_font);
     
     if (client_name.length() != 0 && track.playing) {
