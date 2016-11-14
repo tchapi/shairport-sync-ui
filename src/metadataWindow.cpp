@@ -71,9 +71,9 @@ void metadataWindow::setupUI()
     
     // Add cover image
     size = new QSize(120,120);
-    image = new QPixmap(":/images/default_cover");
+    default_image = new QPixmap(":/images/default_cover");
     image_label  = new QLabel();
-        image_label->setPixmap(*image);
+        image_label->setPixmap(*default_image);
         image_label->setFixedHeight(size->height());
         image_label->setFixedWidth(size->width());
 
@@ -246,8 +246,7 @@ void metadataWindow::updateUI()
         image_label->update();
     } else if (track.pending == false && track.changeImage == true) {
         cout << "setting default image \n";
-        image = new QPixmap(":/images/default_cover");
-        image_label->setPixmap(*image);
+        image_label->setPixmap(*default_image);
         track.changeImage = false;
         image_label->update();
     }

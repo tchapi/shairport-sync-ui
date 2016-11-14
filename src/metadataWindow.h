@@ -64,6 +64,7 @@ class metadataWindow : public QWidget
 
     QLabel *image_label;
     QPixmap *image;
+    QPixmap *default_image;
     QSize *size;
 
     Track track;
