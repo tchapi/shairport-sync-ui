@@ -355,7 +355,8 @@ void metadataWindow::dataReceived()
             // We set pending to true. 'pfls' without 'prsm' can happen between tracks too,
             // that's why we look for 'mden' too so we are not stuck in pending state.
             track.pending = true;
-            track.image = NULL;
+            QImage null_image;
+            track.image = null_image; // Clear the image
             cout << "Flushed" << "\n";
         } else if (code == 'mden') {
             // A sequence of metadata has ended, let's un-pending
