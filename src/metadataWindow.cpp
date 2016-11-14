@@ -58,15 +58,19 @@ void metadataWindow::setupUI()
     standard_font = new QFont("Droid Sans");
     standard_font->setPixelSize(14);
 
-    bigger_font = new QFont("Droid Sans");
-    bigger_font->setPixelSize(18);
+    title_font = new QFont("Droid Sans");
+    title_font->setPixelSize(22);
+    
+    title_em_font = new QFont("Droid Sans");
+    title_em_font->setPixelSize(22);
+    title_em_font->setItalic(true);
     
     em_font = new QFont("Droid Sans");
     em_font->setPixelSize(16);
     em_font->setItalic(true);
     
     // Add cover image
-    size = new QSize(140,140);
+    size = new QSize(120,120);
     image = new QPixmap(":/images/default_cover");
     image_label  = new QLabel();
         image_label->setPixmap(*image);
@@ -80,8 +84,10 @@ void metadataWindow::setupUI()
     title_label_icon->setFixedWidth(20);
 
     title_label = new QLabel("N/A");
-    title_label->setFont(*em_font);
+    title_label->setFont(*title_em_font);
     title_label->setWordWrap(true);
+    title_label->setFixedHeight(50);
+    title_label->setStyleSheet("background-color: #123456; padding-right:6px;");
 
     QHBoxLayout *title_label_layout = new QHBoxLayout();
     title_label_layout->addWidget(title_label_icon);
@@ -96,6 +102,7 @@ void metadataWindow::setupUI()
     artist_label = new QLabel("N/A");
     artist_label->setFont(*em_font);
     artist_label->setWordWrap(true);
+    artist_label->setStyleSheet("background-color: #35467A; padding-right:6px;");
 
     QHBoxLayout *artist_label_layout = new QHBoxLayout();
     artist_label_layout->addWidget(artist_label_icon);
@@ -110,11 +117,13 @@ void metadataWindow::setupUI()
     release_label = new QLabel("N/A");
     release_label->setFont(*em_font);
     release_label->setWordWrap(true);
+    release_label->setStyleSheet("background-color: #C593E2; padding-right:6px;");
 
     QHBoxLayout *release_label_layout = new QHBoxLayout();
     release_label_layout->addWidget(release_label_icon);
     release_label_layout->addWidget(release_label);
 
+    // Status bar
     QMovie *load = new QMovie(":/icons/load");
     status_label_icon = new QLabel();
     status_label_icon->setMovie(load);
@@ -122,8 +131,9 @@ void metadataWindow::setupUI()
     status_label_icon->setFixedWidth(20);
 
     status_label = new QLabel("En attente de données ...");
-    status_label->setFixedHeight(34);
-    status_label->setFont(*bigger_font);
+    status_label->setStyleSheet("background-color: #177AC3; padding-right:6px;");
+    status_label->setFixedHeight(30);
+    status_label->setFont(*standard_font);
 
     QHBoxLayout *status_label_layout = new QHBoxLayout();
     status_label_layout->addWidget(status_label_icon);
@@ -132,7 +142,7 @@ void metadataWindow::setupUI()
 
     // Make the whole layout
     QVBoxLayout *main_layout = new QVBoxLayout();
-    main_layout->setContentsMargins(10,10,10,10);
+    main_layout->setContentsMargins(2,12,2,12);
 
     QHBoxLayout *hbl = new QHBoxLayout();
 
@@ -162,8 +172,13 @@ void metadataWindow::initialise_track_object()
 
 void metadataWindow::updateUI()
 {
-    SetTextToLabel(title_label,QString::fromStdString(track.title));
-    title_label->setFont(*bigger_font);
+    if (!track.title.empty()) {
+        title_label->setFont(*title_font);
+        SetTextToLabel(title_label, "N/A");
+    } else {
+        title_label->setFont(*title_em_font);
+        SetTextToLabel(title_label,QString::fromStdString(track.title));
+    }
 
     SetTextToLabel(artist_label,QString::fromStdString(track.artist));
     artist_label->setFont(*standard_font);
@@ -172,33 +187,33 @@ void metadataWindow::updateUI()
     release_label->setFont(*standard_font);
     
     if (client_name.length() != 0 && track.playing) {
-        status_label->setText("Lecture depuis " + QString::fromStdString(client_name));
         status_label->setFont(*standard_font);
+        SetTextToLabel(status_label, "Lecture depuis " + QString::fromStdString(client_name));
         QPixmap device(":/icons/yt");
         status_label_icon->setPixmap(device);
     } else if (client_name.length() != 0) {
-        status_label->setText("En pause depuis " + QString::fromStdString(client_name));
         status_label->setFont(*standard_font);
+        SetTextToLabel(status_label, "En pause depuis " + QString::fromStdString(client_name));
         QPixmap device(":/icons/yt");
         status_label_icon->setPixmap(device);
     } else if (client_ip.length() != 0 && track.playing) {
-        status_label->setText("Lecture depuis " + QString::fromStdString(client_ip));
         status_label->setFont(*standard_font);
+        SetTextToLabel(status_label, "Lecture depuis " + QString::fromStdString(client_ip));
         QPixmap device(":/icons/device");
         status_label_icon->setPixmap(device);
     } else if (client_ip.length() != 0) {
-        status_label->setText("En pause depuis " + QString::fromStdString(client_ip));
         status_label->setFont(*standard_font);
+        SetTextToLabel(status_label, "En pause depuis " + QString::fromStdString(client_ip));
         QPixmap device(":/icons/device");
         status_label_icon->setPixmap(device);
     } else if (track.playing) {
+        status_label->setFont(*standard_font);
         status_label->setText("Lecture en cours");
-        status_label->setFont(*em_font);
         QPixmap collection(":/icons/collection");
         status_label_icon->setPixmap(collection);
     } else {
-        status_label->setText("Pas de streaming en cours");
         status_label->setFont(*em_font);
+        status_label->setText("Pas de streaming en cours");
         QPixmap load_full(":/icons/load_full");
         status_label_icon->setPixmap(load_full);
     }
@@ -206,7 +221,6 @@ void metadataWindow::updateUI()
     if (!track.image.isNull()) {
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
-
         image_label->setPixmap(*image);
         image_label->update();
     }
@@ -293,7 +307,7 @@ void metadataWindow::dataReceived()
         if (code == 'asal') {
             track.release = payload.toStdString();
             //cout << "Album Name: " << payload.toStdString() << "\n";
-        } else if (code == 'asar') {
+        } else if (code == 'asar' || code == 'asaa') {
             track.artist = payload.toStdString();
             //cout << "Artist: " << payload.toStdString() << "\n";
         } else if (code == 'minm') {
@@ -313,10 +327,10 @@ void metadataWindow::dataReceived()
             //cout << "User Agent: " << payload.toStdString() << "\n";
         } else if (code == 'prsm' || code =='pbeg') {
             track.playing = true;
-            cout << "Started playing" << "\n";
+            //cout << "Started playing" << "\n";
         } else if (code == 'pend') {
             track.playing = false;
-            cout << "Stopped playing" << "\n";
+            //cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         } else {

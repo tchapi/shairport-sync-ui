@@ -56,7 +56,8 @@ class metadataWindow : public QWidget
     QLabel *status_label_icon;
 
     QFont* standard_font;
-    QFont* bigger_font;
+    QFont* title_font;
+    QFont* title_em_font;
     QFont* em_font;
 
     QLabel *image_label;
