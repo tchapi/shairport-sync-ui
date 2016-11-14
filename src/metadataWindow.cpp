@@ -85,7 +85,6 @@ void metadataWindow::setupUI()
 
     title_label = new QLabel("N/A");
     title_label->setFont(*title_em_font);
-    title_label->setWordWrap(true);
     title_label->setFixedHeight(50);
     title_label->setStyleSheet("background-color: #123456; padding-right:6px;");
 
@@ -172,18 +171,18 @@ void metadataWindow::initialise_track_object()
 
 void metadataWindow::updateUI()
 {
-    if (!track.title.empty()) {
-        title_label->setFont(*title_font);
+    if (track.title.empty()) {
+        title_label->setFont(*title_em_font);
         SetTextToLabel(title_label, "N/A");
     } else {
-        title_label->setFont(*title_em_font);
+        title_label->setFont(*title_font);
         SetTextToLabel(title_label,QString::fromStdString(track.title));
     }
 
-    SetTextToLabel(artist_label,QString::fromStdString(track.artist));
+    artist_label->setText(QString::fromStdString(track.artist));
     artist_label->setFont(*standard_font);
 
-    SetTextToLabel(release_label,QString::fromStdString(track.release));
+    release_label->setText(QString::fromStdString(track.release));
     release_label->setFont(*standard_font);
     
     if (client_name.length() != 0 && track.playing) {
