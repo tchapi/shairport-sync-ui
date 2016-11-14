@@ -15,8 +15,6 @@
 using std::string;
 using std::cout;
 
-static const char *metadata_file = "/tmp/shairport-sync-metadata";
-
 struct Track {
     string title;
     string artist;
@@ -36,6 +34,8 @@ class metadataWindow : public QWidget
     void onData();
 
   private:
+    static const char *metadata_file;
+
     QString base64_encode(QString string);
     QString base64_decode(QString string);
 

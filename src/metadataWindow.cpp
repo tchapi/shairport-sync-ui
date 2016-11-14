@@ -15,18 +15,18 @@ QString metadataWindow::base64_decode(QString string){
 
 metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 {
+    const char *metadata_file = "/tmp/shairport-sync-metadata";
+
     // Initialize the Track object with empty strings and the like
     initialise_track_object();
     
     this->setupUI();
 
     // Connect to the metadata pipe
-    FILE *fd = fopen(metadata_file, "r");
+    FILE *fd = fopen(metadata_file, "w+");
     if (fd==NULL)
     {
         cout << "No metadata file found, testing UI." << "\n";
-        QMessageBox::critical(this, "Error", "No metadata file found, testing UI.");
-        //exit(0);
     } else {
         // Use for actual reads
         pipe = new QTextStream(fd);
@@ -39,7 +39,6 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
         // Now disable cursor
         QApplication::setOverrideCursor(Qt::BlankCursor);
     }
-
 }
 
 
@@ -119,6 +118,7 @@ void metadataWindow::initialise_track_object()
     track.title.clear();
     track.artist.clear();
     track.release.clear();
+    track.playing = false;
     client_ip.clear();
     client_name.clear();
     file_type.clear();
