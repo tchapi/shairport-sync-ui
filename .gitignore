@@ -34,3 +34,4 @@
 
 # qmake
 moc_*.cpp
+Makefile # it should be compiled on every machine
