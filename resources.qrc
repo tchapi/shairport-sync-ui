@@ -10,4 +10,7 @@
       <file alias="yt">src/icons/yt.png</file>
       <file alias="load">src/icons/load.gif</file>
     </qresource>
+    <qresource prefix="/images">
+      <file alias="default_cover">src/images/default_cover.png</file>
+    </qresource>
 </RCC>

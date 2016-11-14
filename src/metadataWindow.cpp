@@ -59,7 +59,7 @@ void metadataWindow::setupUI()
     
     // Add cover image
     size = new QSize(140,140);
-    image = new QPixmap(*size);
+    image = new QPixmap(":/images/cover");
     image->fill(QColor("cyan"));
     image_label  = new QLabel();
         image_label->setPixmap(*image);
