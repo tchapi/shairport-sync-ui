@@ -173,6 +173,7 @@ void metadataWindow::initialise_track_object()
     track.artist.clear();
     track.release.clear();
     track.playing = false;
+    track.pending = true;
     client_ip.clear();
     client_name.clear();
 }
@@ -228,6 +229,13 @@ void metadataWindow::updateUI()
         status_label->setText("Lecture en cours ...");
         QPixmap collection(":/icons/collection");
         status_label_icon->setPixmap(collection);
+    } else if (track.pending) {
+        QMovie *load = new QMovie(":/icons/load");
+        status_label_icon = new QLabel();
+        status_label_icon->setMovie(load);
+        load->start();
+        status_label->setFont(*em_font);
+        status_label->setText("En attente de données ...");
     } else {
         status_label->setFont(*em_font);
         status_label->setText("Pas de streaming en cours");
@@ -245,6 +253,8 @@ void metadataWindow::updateUI()
     }
 
     image_label->update();
+
+
 
 }
 
@@ -346,12 +356,18 @@ void metadataWindow::dataReceived()
         } else if (code == 'snua') {
             client_name = payload.toStdString();
             //cout << "User Agent: " << payload.toStdString() << "\n";
-        } else if (code == 'prsm' || code =='pbeg') {
+        } else if (code == 'pfls' || code =='pbeg') {
+            track.pending = true;
+            //cout << "Started playing" << "\n";
+        } else if (code == 'prsm') {
             track.playing = true;
+            track.pending = false;
             //cout << "Started playing" << "\n";
         } else if (code == 'pend') {
             track.playing = false;
-            track.image = base64_image; // Clear the image
+            track.pending = false;
+            QImage null_image;
+            track.image = null_image; // Clear the image
             //cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";

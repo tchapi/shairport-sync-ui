@@ -21,6 +21,7 @@ struct Track {
     string release;
     QImage image;
     bool playing;
+    bool pending;
 };
 
 class metadataWindow : public QWidget
