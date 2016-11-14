@@ -15,8 +15,6 @@ QString metadataWindow::base64_decode(QString string){
 
 metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 {
-    //initialise_decoding_table();
-
     // Initialize the Track object with empty strings and the like
     initialise_track_object();
     
@@ -26,7 +24,9 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     FILE *fd = fopen(metadata_file, "r");
     if (fd==NULL)
     {
-        printf("No metadata file found");
+        cout << "No metadata file found, exiting." << "\n";
+        QMessageBox::critical(this, "Error", "No metadata file found, exiting.");
+        exit(0);
     }
 
     // Use for actual reads
@@ -36,6 +36,9 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     streamReader = new QSocketNotifier(fileno(fd), QSocketNotifier::Read, qApp);
     QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
     streamReader->setEnabled(true);
+
+    // Now disable cursor
+    QApplication::setOverrideCursor(Qt::BlankCursor);
 }
 
 
@@ -83,11 +86,6 @@ void metadataWindow::setupUI()
 
     main_layout->addLayout(hbl);
     main_layout->addWidget(client_ip_label);
-
-    // Add "quit" button
-    //quit_button = new QPushButton("Quit" , this);
-    //QObject::connect(quit_button , SIGNAL(clicked()), qApp , SLOT(quit()));
-    //vbl->addWidget(quit_button);
 }
 
 void metadataWindow::initialise_track_object()
@@ -113,8 +111,11 @@ void metadataWindow::updateUI()
         file_type_label->setText("");
     }
     
-    if (client_ip.length() != 0) {
+    if (client_ip.length() != 0 && track.playing) {
         client_ip_label->setText("En streaming depuis " + QString::fromStdString(client_ip));
+        client_ip_label->setFont(*standard_font);
+    } else if (client_ip.length() != 0) {
+        client_ip_label->setText("En pause depuis " + QString::fromStdString(client_ip));
         client_ip_label->setFont(*standard_font);
     } else {
         client_ip_label->setText("Pas de streaming en cours");

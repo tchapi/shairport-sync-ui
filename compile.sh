@@ -1,4 +1,4 @@
 #!/bin/sh
 
 make clean
-qmake -project && qmake && make
+qmake && make
