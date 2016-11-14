@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/icons">
+      <file alias="cd">src/icons/cd.png</file>
+      <file alias="artist">src/icons/artist.png</file>
+      <file alias="collection">src/icons/collection.png</file>
+      <file alias="device">src/icons/device.png</file>
+      <file alias="file">src/icons/file.png</file>
+      <file alias="load_full">src/icons/load_full.png</file>
+      <file alias="note">src/icons/note.png</file>
+      <file alias="yt">src/icons/yt.png</file>
+      <file alias="load">src/icons/load.gif</file>
+    </qresource>
+</RCC>

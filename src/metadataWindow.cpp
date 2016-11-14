@@ -57,58 +57,109 @@ void metadataWindow::setupUI()
     em_font->setPixelSize(12);
     em_font->setItalic(true);
     
-    // Add image
+    // Add cover image
     size = new QSize(140,140);
     image = new QPixmap(*size);
     image->fill(QColor("cyan"));
     image_label  = new QLabel();
         image_label->setPixmap(*image);
         image_label->setFixedHeight(size->height());
+        image_label->setFixedWidth(size->width());
 
     // Add labels
-    title_label = new QLabel("Titre");
+    QPixmap note(":/icons/note");
+    QLabel *title_label_icon = new QLabel();
+    title_label_icon->setPixmap(note);
+    title_label_icon->setFixedWidth(20);
+
+    title_label = new QLabel("Titre de la chanson, qui peut être long");
     title_label->setStyleSheet("background-color:#333444;");
     title_label->setFont(*standard_font);
+    title_label->setWordWrap(true);
+
+    QHBoxLayout *title_label_layout = new QHBoxLayout();
+    title_label_layout->addWidget(title_label_icon);
+    title_label_layout->addWidget(title_label);
+
+    // Artist widget
+    QPixmap artist(":/icons/artist");
+    QLabel *artist_label_icon = new QLabel();
+    artist_label_icon->setPixmap(artist);
+    artist_label_icon->setFixedWidth(20);
 
     artist_label = new QLabel("Artiste");
     artist_label->setStyleSheet("background-color:#765234;");
     artist_label->setFont(*standard_font);
+    artist_label->setWordWrap(true);
+
+    QHBoxLayout *artist_label_layout = new QHBoxLayout();
+    artist_label_layout->addWidget(artist_label_icon);
+    artist_label_layout->addWidget(artist_label);
+
+    // Album widget
+    QPixmap cd(":/icons/cd");
+    QLabel *release_label_icon = new QLabel();
+    release_label_icon->setPixmap(cd);
+    release_label_icon->setFixedWidth(20);
 
     release_label = new QLabel("Album");
     release_label->setStyleSheet("background-color:#A34C87;");
     release_label->setFont(*standard_font);
+    release_label->setWordWrap(true);
+
+    QHBoxLayout *release_label_layout = new QHBoxLayout();
+    release_label_layout->addWidget(release_label_icon);
+    release_label_layout->addWidget(release_label);
+
+
+    // File type
+    QPixmap file(":/icons/file");
+    QLabel *file_type_label_icon = new QLabel();
+    file_type_label_icon->setPixmap(file);
+    file_type_label_icon->setFixedWidth(20);
 
     file_type_label = new QLabel("Fichier MP3");
     file_type_label->setStyleSheet("background-color:#9345C1;");
     file_type_label->setFixedHeight(30);
     file_type_label->setFont(*standard_font);
 
-    // QLabel *lbl = new QLabel;
-    // QMovie *movie = new QMovie("G:/loader.gif");
-    // lbl->setMovie(movie);
-    // lbl->show();
-    // movie->start();
+    QHBoxLayout *file_type_label_layout = new QHBoxLayout();
+    file_type_label_layout->addWidget(file_type_label_icon);
+    file_type_label_layout->addWidget(file_type_label);
+
+    QMovie *load = new QMovie(":/icons/load");
+    status_label_icon = new QLabel();
+    status_label_icon->setMovie(load);
+    load->start();
+    status_label_icon->setFixedWidth(20);
+
     status_label = new QLabel("En attente de données ...");
     status_label->setStyleSheet("background-color:#AC7623;");
     status_label->setFixedHeight(34);
     status_label->setFont(*bigger_font);
-    
+
+    QHBoxLayout *status_label_layout = new QHBoxLayout();
+    status_label_layout->addWidget(status_label_icon);
+    status_label_layout->addWidget(status_label);
+
+
+    // Make the whole layout
     QVBoxLayout *main_layout = new QVBoxLayout();
     main_layout->setContentsMargins(10,10,10,10);
 
     QHBoxLayout *hbl = new QHBoxLayout();
 
     QVBoxLayout *vbl = new QVBoxLayout();
-    vbl->addWidget(title_label);
-    vbl->addWidget(artist_label);
-    vbl->addWidget(release_label);
+    vbl->addLayout(title_label_layout);
+    vbl->addLayout(artist_label_layout);
+    vbl->addLayout(release_label_layout);
 
     hbl->addWidget(image_label);
     hbl->addLayout(vbl);
 
     main_layout->addLayout(hbl);
-    main_layout->addWidget(file_type_label);
-    main_layout->addWidget(status_label);
+    main_layout->addLayout(file_type_label_layout);
+    main_layout->addLayout(status_label_layout);
 
     this->setLayout(main_layout);
 }
@@ -137,15 +188,31 @@ void metadataWindow::updateUI()
         file_type_label->setText("");
     }
     
-    if (client_ip.length() != 0 && track.playing) {
+    if (client_name.length() != 0 && track.playing) {
+        status_label->setText("En streaming depuis " + QString::fromStdString(client_name));
+        status_label->setFont(*standard_font);
+        QPixmap device(":/icons/yt");
+        status_label_icon->setPixmap(device);
+    } else if (client_name.length() != 0) {
+        status_label->setText("En pause depuis " + QString::fromStdString(client_name));
+        status_label->setFont(*standard_font);
+        QPixmap device(":/icons/yt");
+        status_label_icon->setPixmap(device);
+    } else if (client_ip.length() != 0 && track.playing) {
         status_label->setText("En streaming depuis " + QString::fromStdString(client_ip));
         status_label->setFont(*standard_font);
+        QPixmap device(":/icons/device");
+        status_label_icon->setPixmap(device);
     } else if (client_ip.length() != 0) {
         status_label->setText("En pause depuis " + QString::fromStdString(client_ip));
         status_label->setFont(*standard_font);
+        QPixmap device(":/icons/device");
+        status_label_icon->setPixmap(device);
     } else {
         status_label->setText("Pas de streaming en cours");
         status_label->setFont(*em_font);
+        QPixmap load_full(":/icons/load_full");
+        status_label_icon->setPixmap(load_full);
     }
 
     image->convertFromImage(track.image);

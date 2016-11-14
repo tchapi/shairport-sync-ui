@@ -53,6 +53,7 @@ class metadataWindow : public QWidget
     QLabel *release_label;
     QLabel *file_type_label;
     QLabel *status_label;
+    QLabel *status_label_icon;
 
     QFont* standard_font;
     QFont* bigger_font;
