@@ -1,4 +1,4 @@
-#include <QtGui> 
+#include <QtGui>
 #include "metadataWindow.h"
 
 QString metadataWindow::base64_encode(QString string){
@@ -16,7 +16,7 @@ QString metadataWindow::base64_decode(QString string){
 static void SetTextToLabel(QLabel *label, QString text)
 {
     QFontMetrics metrix(label->font());
-    int width = label->width() - 2;
+    int width = label->width() - 20;
     QString clippedText = metrix.elidedText(text, Qt::ElideRight, width);
     label->setText(clippedText);
 }
