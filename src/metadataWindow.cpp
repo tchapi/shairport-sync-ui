@@ -306,7 +306,7 @@ void metadataWindow::dataReceived()
         if (code == 'asal') {
             track.release = payload.toStdString();
             //cout << "Album Name: " << payload.toStdString() << "\n";
-        } else if (code == 'asar' || code == 'asaa') {
+        } else if (code == 'asar' || (code == 'asaa' && !payload.isEmpty())) {
             track.artist = payload.toStdString();
             //cout << "Artist: " << payload.toStdString() << "\n";
         } else if (code == 'minm') {
