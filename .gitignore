@@ -32,7 +32,5 @@
 *.dSYM/
 *.su
 
-
 # qmake
-*.pro
 moc_*.cpp
