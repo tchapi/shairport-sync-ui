@@ -174,6 +174,7 @@ void metadataWindow::initialise_track_object()
     track.release.clear();
     track.playing = false;
     track.pending = true;
+    track.changeImage = false;
     client_ip.clear();
     client_name.clear();
 }
@@ -236,20 +237,20 @@ void metadataWindow::updateUI()
         status_label_icon->setPixmap(load_full);
     }
 
-    if (track.playing && !track.image.isNull()) {
-        cout << "setting image \n" ;
+    if (track.playing && track.changeImage == true) {
+        cout << "setting new image \n" ;
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
         image_label->setPixmap(*image);
-    } else {
-        cout << "setting default image \n" ;
+        track.changeImage = false;
+        image_label->update();
+    } else if (track.pending == false && track.changeImage == true) {
+        cout << "setting default image \n";
         image = new QPixmap(":/images/default_cover");
         image_label->setPixmap(*image);
+        track.changeImage = false;
+        image_label->update();
     }
-
-    image_label->update();
-
-
 
 }
 
@@ -340,6 +341,7 @@ void metadataWindow::dataReceived()
             //cout << "Title: " << payload.toStdString() << "\n";
         } else if (code == 'PICT' && ret_pic) {
             track.image = base64_image;
+            track.changeImage = true;
             //cout << "Picture received, length " << length << " bytes." << "\n";
         } else if (code == 'clip') {
             client_ip = payload.toStdString();
@@ -355,8 +357,7 @@ void metadataWindow::dataReceived()
             // We set pending to true. 'pfls' without 'prsm' can happen between tracks too,
             // that's why we look for 'mden' too so we are not stuck in pending state.
             track.pending = true;
-            QImage null_image;
-            track.image = null_image; // Clear the image
+            track.changeImage = true;
             cout << "Flushed" << "\n";
         } else if (code == 'mden') {
             // A sequence of metadata has ended, let's un-pending
@@ -370,8 +371,7 @@ void metadataWindow::dataReceived()
             // END OF SESSION. pending is reset to false, as is playing state.
             track.playing = false;
             track.pending = false;
-            QImage null_image;
-            track.image = null_image; // Clear the image
+            track.changeImage = true;
             cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";

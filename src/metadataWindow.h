@@ -20,6 +20,7 @@ struct Track {
     string artist;
     string release;
     QImage image;
+    bool changeImage;
     bool playing;
     bool pending;
 };
