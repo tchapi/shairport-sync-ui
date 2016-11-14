@@ -16,7 +16,7 @@ QString metadataWindow::base64_decode(QString string){
 static void SetTextToLabel(QLabel *label, QString text)
 {
     QFontMetrics metrix(label->font());
-    int width = label->width() - 20;
+    int width = label->width() - 10;
     QString clippedText = metrix.elidedText(text, Qt::ElideRight, width);
     label->setText(clippedText);
 }
@@ -171,19 +171,29 @@ void metadataWindow::initialise_track_object()
 
 void metadataWindow::updateUI()
 {
-    if (track.title.empty()) {
+    if (track.title.empty() || track.playing == false) {
         title_label->setFont(*title_em_font);
-        SetTextToLabel(title_label, "N/A");
+        title_label->setText("N/A");
     } else {
         title_label->setFont(*title_font);
         SetTextToLabel(title_label,QString::fromStdString(track.title));
     }
 
-    artist_label->setText(QString::fromStdString(track.artist));
-    artist_label->setFont(*standard_font);
+    if (track.artist.empty() || track.playing == false) {
+        artist_label->setFont(*em_font);
+        artist_label->setText("N/A");
+    } else {
+        artist_label->setText(QString::fromStdString(track.artist));
+        artist_label->setFont(*standard_font);
+    }
 
-    release_label->setText(QString::fromStdString(track.release));
-    release_label->setFont(*standard_font);
+    if (track.release.empty() || track.playing == false) {
+        release_label->setFont(*em_font);
+        release_label->setText("N/A");
+    } else {
+        release_label->setText(QString::fromStdString(track.release));
+        release_label->setFont(*standard_font);
+    }
     
     if (client_name.length() != 0 && track.playing) {
         status_label->setFont(*standard_font);
@@ -217,12 +227,16 @@ void metadataWindow::updateUI()
         status_label_icon->setPixmap(load_full);
     }
 
-    if (!track.image.isNull()) {
+    if (track.playing && !track.image.isNull()) {
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
         image_label->setPixmap(*image);
-        image_label->update();
+    } else {
+        image = new QPixmap(":/images/default_cover");
+        image_label->setPixmap(*image);
     }
+
+    image_label->update();
 
 }
 
@@ -236,13 +250,13 @@ void metadataWindow::dataReceived()
     //cout << "\nProcessing new metadata ...\n";
 
     if (pipe->atEnd()) {
-        cout << " > No more data to read ...\n";
+        //cout << " > No more data to read ...\n";
         return;
     }
 
     QString line = pipe->readLine();
     if (line.isEmpty() || line.isNull()) {
-        cout << " > Skipping empty line.\n";
+        //cout << " > Skipping empty line.\n";
         return;
     }
 
