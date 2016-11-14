@@ -237,21 +237,12 @@ void metadataWindow::updateUI()
     }
 
     if (track.playing && !track.image.isNull()) {
+        cout << "setting image \n" ;
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
         image_label->setPixmap(*image);
-    } else if (track.pending && !image_label->pixmap()->isNull()){
-        QPixmap overlay(":/icons/load_image");
-        QPixmap base = image_label->pixmap()->copy();
-        QPixmap result(base.width(), base.height());
-        result.fill(Qt::transparent); // force alpha channel
-        {
-            QPainter painter(&result);
-            painter.drawPixmap(0, 0, base);
-            painter.drawPixmap(0, 0, overlay);
-        }
-        image_label->setPixmap(result);
     } else {
+        cout << "setting default image \n" ;
         image = new QPixmap(":/images/default_cover");
         image_label->setPixmap(*image);
     }
@@ -364,7 +355,8 @@ void metadataWindow::dataReceived()
             // We set pending to true. 'pfls' without 'prsm' can happen between tracks too,
             // that's why we look for 'mden' too so we are not stuck in pending state.
             track.pending = true;
-            //cout << "Started playing" << "\n";
+            track.image = NULL;
+            cout << "Flushed" << "\n";
         } else if (code == 'mden') {
             // A sequence of metadata has ended, let's un-pending
             track.pending = false;
@@ -379,7 +371,7 @@ void metadataWindow::dataReceived()
             track.pending = false;
             QImage null_image;
             track.image = null_image; // Clear the image
-            //cout << "Stopped playing" << "\n";
+            cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         } else {

@@ -9,7 +9,6 @@
       <file alias="note">src/icons/note.png</file>
       <file alias="yt">src/icons/yt.png</file>
       <file alias="load">src/icons/load.gif</file>
-      <file alias="load_image">src/icons/load_image.gif</file>
     </qresource>
     <qresource prefix="/images">
       <file alias="default_cover">src/images/default_cover.png</file>
