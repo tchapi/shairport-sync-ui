@@ -284,15 +284,15 @@ void metadataWindow::dataReceived()
     //cout << "Message: [" << message << "]\n";
     int ret = sscanf(message,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
     
-    // Get code and type strings
-    char typestring[5];
-    *(uint32_t*)typestring = htonl(type);
-    typestring[4] = 0;
-    char codestring[5];
-    *(uint32_t*)codestring = htonl(code);
-    codestring[4] = 0;
+    // DEBUG : Get code and type strings
+    // char typestring[5];
+    // *(uint32_t*)typestring = htonl(type);
+    // typestring[4] = 0;
+    // char codestring[5];
+    // *(uint32_t*)codestring = htonl(code);
+    // codestring[4] = 0;
 
-    cout << " > Found tag: " << typestring << " / " << codestring << " of length " << length << "\n";
+    // cout << " > Found tag: " << typestring << " / " << codestring << " of length " << length << "\n";
 
     if (type > 0 && code > 0 && ret == 3) {
         // now, think about processing the tag.
@@ -326,8 +326,7 @@ void metadataWindow::dataReceived()
             //cout << " > Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
         }
        
-        // this has more information about tags, which might be relevant:
-        // https://code.google.com/p/ytrack/wiki/DMAP
+        // See DMAP_DAAP_Codes.md
         if (code == 'asal') {
             track.release = payload.toStdString();
             //cout << "Album Name: " << payload.toStdString() << "\n";
@@ -350,13 +349,21 @@ void metadataWindow::dataReceived()
             client_name = payload.toStdString();
             //cout << "User Agent: " << payload.toStdString() << "\n";
         } else if (code == 'pfls' || code =='pbeg') {
+            // FLUSH or BEGIN
+            // We set pending to true. 'pfls' without 'prsm' can happen between tracks too,
+            // that's why we look for 'mden' too so we are not stuck in pending state.
             track.pending = true;
             //cout << "Started playing" << "\n";
+        } else if (code == 'mden') {
+            // A sequence of metadata has ended, let's un-pending
+            track.pending = false;
         } else if (code == 'prsm') {
+            // RESUME, which means a track is being actually played after the metadata has been sent
             track.playing = true;
             track.pending = false;
             //cout << "Started playing" << "\n";
         } else if (code == 'pend') {
+            // END OF SESSION. pending is reset to false, as is playing state.
             track.playing = false;
             track.pending = false;
             QImage null_image;
@@ -368,10 +375,11 @@ void metadataWindow::dataReceived()
             //cout << "Other Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         }
 
+        updateUI();
+
     } else {
         //cout << "Could not decipher the message.\n";;
     }
     
     pipe->flush();
-    updateUI();
 }
