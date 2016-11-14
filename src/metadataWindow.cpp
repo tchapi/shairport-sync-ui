@@ -115,7 +115,7 @@ void metadataWindow::setupUI()
     file_type_label_icon->setPixmap(file);
     file_type_label_icon->setFixedWidth(20);
 
-    file_type_label = new QLabel("N/A");
+    file_type_label = new QLabel("Aucun streaming en cours");
     file_type_label->setFixedHeight(30);
     file_type_label->setFont(*standard_font);
 

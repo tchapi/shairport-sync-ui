@@ -12,8 +12,7 @@ int main(int argc, char *argv[])
     metadataWindow window;
     
     window.setStyleSheet("background-color: black; color: white;");
-    window.setFixedSize(320,240);
-    window.show();//FullScreen();
+    window.showFullScreen();
 
     return app.exec();
 }
