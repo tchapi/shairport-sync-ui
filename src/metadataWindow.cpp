@@ -240,6 +240,17 @@ void metadataWindow::updateUI()
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
         image_label->setPixmap(*image);
+    } else if (track.pending && !image_label->pixmap()->isNull()){
+        QPixmap overlay(":/icons/load_image");
+        QPixmap base = image_label->pixmap()->copy();
+        QPixmap result(base.width(), base.height());
+        result.fill(Qt::transparent); // force alpha channel
+        {
+            QPainter painter(&result);
+            painter.drawPixmap(0, 0, base);
+            painter.drawPixmap(0, 0, overlay);
+        }
+        image_label->setPixmap(result);
     } else {
         image = new QPixmap(":/images/default_cover");
         image_label->setPixmap(*image);
