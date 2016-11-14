@@ -21,6 +21,7 @@ struct Track {
     string release;
     QImage image;
     bool changeImage;
+    bool resetImage;
     bool playing;
     bool pending;
 };

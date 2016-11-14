@@ -175,6 +175,7 @@ void metadataWindow::initialise_track_object()
     track.playing = false;
     track.pending = true;
     track.changeImage = false;
+    track.resetImage = false;
     client_ip.clear();
     client_name.clear();
 }
@@ -237,17 +238,17 @@ void metadataWindow::updateUI()
         status_label_icon->setPixmap(load_full);
     }
 
-    if (track.playing && track.changeImage == true) {
+    if (track.changeImage == true) {
         cout << "setting new image \n" ;
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
         image_label->setPixmap(*image);
         track.changeImage = false;
         image_label->update();
-    } else if (track.pending == false && track.changeImage == true) {
+    } else if (track.resetImage == true) {
         cout << "setting default image \n";
         image_label->setPixmap(*default_image);
-        track.changeImage = false;
+        track.resetImage = false;
         image_label->update();
     }
 
@@ -341,6 +342,7 @@ void metadataWindow::dataReceived()
         } else if (code == 'PICT' && ret_pic) {
             track.image = base64_image;
             track.changeImage = true;
+            track.resetImage = false;
             //cout << "Picture received, length " << length << " bytes." << "\n";
         } else if (code == 'clip') {
             client_ip = payload.toStdString();
@@ -356,7 +358,7 @@ void metadataWindow::dataReceived()
             // We set pending to true. 'pfls' without 'prsm' can happen between tracks too,
             // that's why we look for 'mden' too so we are not stuck in pending state.
             track.pending = true;
-            track.changeImage = true;
+            //track.changeImage = true;
             cout << "Flushed" << "\n";
         } else if (code == 'mden') {
             // A sequence of metadata has ended, let's un-pending
@@ -370,7 +372,8 @@ void metadataWindow::dataReceived()
             // END OF SESSION. pending is reset to false, as is playing state.
             track.playing = false;
             track.pending = false;
-            track.changeImage = true;
+            track.resetImage = true;
+            track.changeImage = false;
             cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
