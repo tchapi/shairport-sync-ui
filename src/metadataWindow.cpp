@@ -31,6 +31,7 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     this->setupUI();
 
     // Connect to the metadata pipe
+    // TODO fix "r" flag when pipe has no writer, the call is blocking
     FILE *fd = fopen(metadata_file, "r");
     if (fd==NULL)
     {
@@ -238,6 +239,7 @@ void metadataWindow::updateUI()
         status_label_icon->setPixmap(load_full);
     }
 
+    // Only update image label when necessary
     if (track.changeImage == true) {
         cout << "setting new image \n" ;
         image->convertFromImage(track.image);
@@ -358,8 +360,7 @@ void metadataWindow::dataReceived()
             // We set pending to true. 'pfls' without 'prsm' can happen between tracks too,
             // that's why we look for 'mden' too so we are not stuck in pending state.
             track.pending = true;
-            //track.changeImage = true;
-            cout << "Flushed" << "\n";
+            //cout << "Flushed" << "\n";
         } else if (code == 'mden') {
             // A sequence of metadata has ended, let's un-pending
             track.pending = false;
@@ -374,7 +375,7 @@ void metadataWindow::dataReceived()
             track.pending = false;
             track.resetImage = true;
             track.changeImage = false;
-            cout << "Stopped playing" << "\n";
+            //cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         } else {
