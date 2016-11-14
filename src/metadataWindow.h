@@ -52,9 +52,10 @@ class metadataWindow : public QWidget
     QLabel *artist_label;
     QLabel *release_label;
     QLabel *file_type_label;
-    QLabel *client_ip_label;
+    QLabel *status_label;
 
     QFont* standard_font;
+    QFont* bigger_font;
     QFont* em_font;
 
     QLabel *image_label;

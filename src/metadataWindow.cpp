@@ -24,68 +24,94 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     FILE *fd = fopen(metadata_file, "r");
     if (fd==NULL)
     {
-        cout << "No metadata file found, exiting." << "\n";
-        QMessageBox::critical(this, "Error", "No metadata file found, exiting.");
-        exit(0);
+        cout << "No metadata file found, testing UI." << "\n";
+        QMessageBox::critical(this, "Error", "No metadata file found, testing UI.");
+        //exit(0);
+    } else {
+        // Use for actual reads
+        pipe = new QTextStream(fd);
+
+        // Use for events when the pipe is filled
+        streamReader = new QSocketNotifier(fileno(fd), QSocketNotifier::Read, qApp);
+        QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
+        streamReader->setEnabled(true);
+
+        // Now disable cursor
+        QApplication::setOverrideCursor(Qt::BlankCursor);
     }
 
-    // Use for actual reads
-    pipe = new QTextStream(fd);
-
-    // Use for events when the pipe is filled
-    streamReader = new QSocketNotifier(fileno(fd), QSocketNotifier::Read, qApp);
-    QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
-    streamReader->setEnabled(true);
-
-    // Now disable cursor
-    QApplication::setOverrideCursor(Qt::BlankCursor);
 }
 
 
 void metadataWindow::setupUI()
 {
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+
     // Create Fonts
-    standard_font = new QFont("Courier New");
+    standard_font = new QFont("Droid Sans");
     standard_font->setPixelSize(12);
+
+    bigger_font = new QFont("Droid Sans");
+    bigger_font->setPixelSize(18);
     
-    em_font = new QFont("Courier New");
+    em_font = new QFont("Droid Sans");
     em_font->setPixelSize(12);
     em_font->setItalic(true);
     
     // Add image
-    size = new QSize(100,100);
+    size = new QSize(140,140);
     image = new QPixmap(*size);
     image->fill(QColor("cyan"));
-    image_label  = new QLabel(this);
+    image_label  = new QLabel();
         image_label->setPixmap(*image);
+        image_label->setFixedHeight(size->height());
 
     // Add labels
-    title_label = new QLabel("Titre", this);
+    title_label = new QLabel("Titre");
+    title_label->setStyleSheet("background-color:#333444;");
     title_label->setFont(*standard_font);
-    artist_label = new QLabel("Artiste", this);
+
+    artist_label = new QLabel("Artiste");
+    artist_label->setStyleSheet("background-color:#765234;");
     artist_label->setFont(*standard_font);
-    release_label = new QLabel("Album", this);
+
+    release_label = new QLabel("Album");
+    release_label->setStyleSheet("background-color:#A34C87;");
     release_label->setFont(*standard_font);
-    file_type_label = new QLabel("Fichier MP3", this);
+
+    file_type_label = new QLabel("Fichier MP3");
+    file_type_label->setStyleSheet("background-color:#9345C1;");
+    file_type_label->setFixedHeight(30);
     file_type_label->setFont(*standard_font);
-    client_ip_label = new QLabel("En streaming depuis 192.168.1.24", this);
-    client_ip_label->setFont(*standard_font);
+
+    // QLabel *lbl = new QLabel;
+    // QMovie *movie = new QMovie("G:/loader.gif");
+    // lbl->setMovie(movie);
+    // lbl->show();
+    // movie->start();
+    status_label = new QLabel("En attente de données ...");
+    status_label->setStyleSheet("background-color:#AC7623;");
+    status_label->setFixedHeight(34);
+    status_label->setFont(*bigger_font);
     
-    QVBoxLayout *main_layout = new QVBoxLayout(this);
+    QVBoxLayout *main_layout = new QVBoxLayout();
+    main_layout->setContentsMargins(10,10,10,10);
 
-    QHBoxLayout *hbl = new QHBoxLayout(this);
+    QHBoxLayout *hbl = new QHBoxLayout();
 
-    QVBoxLayout *vbl = new QVBoxLayout(this);
+    QVBoxLayout *vbl = new QVBoxLayout();
     vbl->addWidget(title_label);
     vbl->addWidget(artist_label);
     vbl->addWidget(release_label);
-    vbl->addWidget(file_type_label);
 
     hbl->addWidget(image_label);
     hbl->addLayout(vbl);
 
     main_layout->addLayout(hbl);
-    main_layout->addWidget(client_ip_label);
+    main_layout->addWidget(file_type_label);
+    main_layout->addWidget(status_label);
+
+    this->setLayout(main_layout);
 }
 
 void metadataWindow::initialise_track_object()
@@ -112,14 +138,14 @@ void metadataWindow::updateUI()
     }
     
     if (client_ip.length() != 0 && track.playing) {
-        client_ip_label->setText("En streaming depuis " + QString::fromStdString(client_ip));
-        client_ip_label->setFont(*standard_font);
+        status_label->setText("En streaming depuis " + QString::fromStdString(client_ip));
+        status_label->setFont(*standard_font);
     } else if (client_ip.length() != 0) {
-        client_ip_label->setText("En pause depuis " + QString::fromStdString(client_ip));
-        client_ip_label->setFont(*standard_font);
+        status_label->setText("En pause depuis " + QString::fromStdString(client_ip));
+        status_label->setFont(*standard_font);
     } else {
-        client_ip_label->setText("Pas de streaming en cours");
-        client_ip_label->setFont(*em_font);
+        status_label->setText("Pas de streaming en cours");
+        status_label->setFont(*em_font);
     }
 
     image->convertFromImage(track.image);
