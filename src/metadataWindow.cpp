@@ -23,7 +23,7 @@ metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
     this->setupUI();
 
     // Connect to the metadata pipe
-    FILE *fd = fopen(metadata_file, "w+");
+    FILE *fd = fopen(metadata_file, "r");
     if (fd==NULL)
     {
         cout << "No metadata file found, testing UI." << "\n";
