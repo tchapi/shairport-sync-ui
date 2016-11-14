@@ -48,13 +48,13 @@ void metadataWindow::setupUI()
 
     // Create Fonts
     standard_font = new QFont("Droid Sans");
-    standard_font->setPixelSize(13);
+    standard_font->setPixelSize(14);
 
     bigger_font = new QFont("Droid Sans");
     bigger_font->setPixelSize(18);
     
     em_font = new QFont("Droid Sans");
-    em_font->setPixelSize(18);
+    em_font->setPixelSize(16);
     em_font->setItalic(true);
     
     // Add cover image
@@ -174,13 +174,16 @@ void metadataWindow::updateUI()
 {
     cout << "Updating UI\n";
     title_label->setText(QString::fromStdString(track.title));
+    title_label->setFont(*standard_font);
     artist_label->setText(QString::fromStdString(track.artist));
+    artist_label->setFont(*standard_font);
     release_label->setText(QString::fromStdString(track.release));
+    release_label->setFont(*standard_font);
     
     if (file_type.length() != 0) {
         file_type_label->setText("Fichier " + QString::fromStdString(file_type));
     } else {
-        file_type_label->setText("");
+        file_type_label->setText("Streaming direct");
     }
     
     if (client_name.length() != 0 && track.playing) {
@@ -287,14 +290,8 @@ void metadataWindow::dataReceived()
                     if (code != 'PICT') {
                         payload = base64_decode(line);
                     } else {
-                        cout << " > ## trying to create image !\n";
-                        //cout << line;
                         QByteArray base64Data = line.toAscii();
                         ret_pic = base64_image.loadFromData(QByteArray::fromBase64(base64Data));
-                        if (ret_pic == true) {
-                            cout << " > ## Success !! (" << base64_image.width() << "x" << base64_image.height() << ")" << "\n";
-
-                        }
                     }
                 } else {
                     cout << " > Looks like a bad payload" << "\n";
@@ -308,38 +305,38 @@ void metadataWindow::dataReceived()
         // https://code.google.com/p/ytrack/wiki/DMAP
         if (code == 'asal') {
             track.release = payload.toStdString();
-            cout << "Album Name: " << payload.toStdString() << "\n";
+            //cout << "Album Name: " << payload.toStdString() << "\n";
         } else if (code == 'asar') {
             track.artist = payload.toStdString();
-            cout << "Artist: " << payload.toStdString() << "\n";
+            //cout << "Artist: " << payload.toStdString() << "\n";
         } else if (code == 'minm') {
             track.title = payload.toStdString();
-            cout << "Title: " << payload.toStdString() << "\n";
+            //cout << "Title: " << payload.toStdString() << "\n";
         } else if (code == 'asdt') {
             file_type = payload.toStdString();
-            cout << "File kind: " << payload.toStdString() << "\n";
+            //cout << "File kind: " << payload.toStdString() << "\n";
         } else if (code == 'PICT' && ret_pic) {
             track.image = base64_image;
-            cout << "Picture received, length " << length << " bytes." << "\n";
+            //cout << "Picture received, length " << length << " bytes." << "\n";
         } else if (code == 'clip') {
             client_ip = payload.toStdString();
-            cout << "Client's IP: " << payload.toStdString() << "\n";
+            //cout << "Client's IP: " << payload.toStdString() << "\n";
         } else if (code == 'snam') {
             client_name = payload.toStdString();
-            cout << "Device Name: " << payload.toStdString() << "\n";
+            //cout << "Device Name: " << payload.toStdString() << "\n";
         } else if (code == 'snua') {
             client_name = payload.toStdString();
-            cout << "User Agent: " << payload.toStdString() << "\n";
+            //cout << "User Agent: " << payload.toStdString() << "\n";
         } else if (code == 'prms' || code =='pbeg') {
             track.playing = true;
-            cout << "Started playing" << "\n";
+            //cout << "Started playing" << "\n";
         } else if (code == 'pend') {
             track.playing = false;
-            cout << "Stopped playing" << "\n";
+            //cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
-            cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
+            //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         } else {
-            cout << "Other Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
+            //cout << "Other Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         }
 
     } else {
