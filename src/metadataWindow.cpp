@@ -85,12 +85,13 @@ void metadataWindow::setupUI()
 
     title_label = new QLabel("N/A");
     title_label->setFont(*title_em_font);
-    title_label->setFixedHeight(42);
-    title_label->setStyleSheet("padding-right:6px;");
+    title_label->setFixedHeight(30);
+    title_label->setStyleSheet("background-color: #123456; padding-right:6px;");
 
     QHBoxLayout *title_label_layout = new QHBoxLayout();
     title_label_layout->addWidget(title_label_icon);
     title_label_layout->addWidget(title_label);
+    title_label_layout->setContentsMargins(0,0,0,0);
 
     // Artist widget
     QPixmap artist(":/icons/artist");
@@ -101,7 +102,7 @@ void metadataWindow::setupUI()
     artist_label = new QLabel("N/A");
     artist_label->setFont(*em_font);
     artist_label->setWordWrap(true);
-    artist_label->setStyleSheet("padding-right:6px;");
+    artist_label->setStyleSheet("background-color: #123456; padding-right:6px;");
 
     QHBoxLayout *artist_label_layout = new QHBoxLayout();
     artist_label_layout->addWidget(artist_label_icon);
@@ -116,7 +117,7 @@ void metadataWindow::setupUI()
     release_label = new QLabel("N/A");
     release_label->setFont(*em_font);
     release_label->setWordWrap(true);
-    release_label->setStyleSheet("padding-right:6px;");
+    release_label->setStyleSheet("background-color: #123456; padding-right:6px;");
 
     QHBoxLayout *release_label_layout = new QHBoxLayout();
     release_label_layout->addWidget(release_label_icon);
@@ -141,20 +142,22 @@ void metadataWindow::setupUI()
 
     // Make the whole layout
     QVBoxLayout *main_layout = new QVBoxLayout();
-    main_layout->setContentsMargins(2,12,2,12);
+    main_layout->setContentsMargins(2,10,2,12);
 
     QHBoxLayout *hbl = new QHBoxLayout();
 
     QVBoxLayout *vbl = new QVBoxLayout();
     vbl->addLayout(artist_label_layout);
+    vbl->setSpacing(8);
     vbl->addLayout(release_label_layout);
 
     hbl->addWidget(image_label);
+    hbl->setSpacing(14);
     hbl->addLayout(vbl);
 
     QLabel *separator = new QLabel();
     separator->setFixedHeight(1);
-    separator->setStyleSheet("border-bottom: 1px solid white;");
+    separator->setStyleSheet("border-top: 1px solid white;");
 
     main_layout->addLayout(title_label_layout);
     main_layout->addWidget(separator);
