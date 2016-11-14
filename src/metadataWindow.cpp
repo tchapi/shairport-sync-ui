@@ -215,7 +215,7 @@ void metadataWindow::updateUI()
         icon = QPixmap(":/icons/device");
     }
 
-    if (track.playing) {
+    if (track.playing && !track.pending) {
         status_label->setFont(*standard_font);
         SetTextToLabel(status_label, "Lecture" + name);
         status_label_icon->setPixmap(icon);
