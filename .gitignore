@@ -35,3 +35,6 @@
 # qmake
 moc_*.cpp
 Makefile # it should be compiled on every machine
+__SOURCES__
+TODO.todo
+build/
