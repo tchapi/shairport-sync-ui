@@ -231,7 +231,6 @@ void metadataWindow::updateUI()
         status_label_icon->setPixmap(collection);
     } else if (track.pending) {
         QMovie *load = new QMovie(":/icons/load");
-        status_label_icon = new QLabel();
         status_label_icon->setMovie(load);
         load->start();
         status_label->setFont(*em_font);
