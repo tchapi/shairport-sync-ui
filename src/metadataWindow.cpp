@@ -167,7 +167,7 @@ void metadataWindow::updateUI()
 
     artist_label->setText(QString::fromStdString(track.artist));
     artist_label->setFont(*standard_font);
-    
+
     release_label->setText(QString::fromStdString(track.release));
     release_label->setFont(*standard_font);
     
@@ -311,7 +311,7 @@ void metadataWindow::dataReceived()
         } else if (code == 'snua') {
             client_name = payload.toStdString();
             //cout << "User Agent: " << payload.toStdString() << "\n";
-        } else if (code == 'prms' || code =='pbeg') {
+        } else if (code == 'prsm' || code =='pbeg') {
             track.playing = true;
             cout << "Started playing" << "\n";
         } else if (code == 'pend') {
