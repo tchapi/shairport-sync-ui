@@ -67,7 +67,6 @@ class metadataWindow : public QWidget
 
     string client_ip;
     string client_name;
-    string file_type;
 };
 
 #endif

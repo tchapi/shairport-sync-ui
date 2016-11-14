@@ -13,6 +13,14 @@ QString metadataWindow::base64_decode(QString string){
     return QByteArray::fromBase64(ba);
 }
 
+static void SetTextToLabel(QLabel *label, QString text)
+{
+    QFontMetrics metrix(label->font());
+    int width = label->width() - 2;
+    QString clippedText = metrix.elidedText(text, Qt::ElideRight, width);
+    label->setText(clippedText);
+}
+
 metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 {
     const char *metadata_file = "/tmp/shairport-sync-metadata";
@@ -107,21 +115,6 @@ void metadataWindow::setupUI()
     release_label_layout->addWidget(release_label_icon);
     release_label_layout->addWidget(release_label);
 
-
-    // File type
-    QPixmap file(":/icons/file");
-    QLabel *file_type_label_icon = new QLabel();
-    file_type_label_icon->setPixmap(file);
-    file_type_label_icon->setFixedWidth(20);
-
-    file_type_label = new QLabel("Aucun streaming en cours");
-    file_type_label->setFixedHeight(30);
-    file_type_label->setFont(*standard_font);
-
-    QHBoxLayout *file_type_label_layout = new QHBoxLayout();
-    file_type_label_layout->addWidget(file_type_label_icon);
-    file_type_label_layout->addWidget(file_type_label);
-
     QMovie *load = new QMovie(":/icons/load");
     status_label_icon = new QLabel();
     status_label_icon->setMovie(load);
@@ -144,15 +137,14 @@ void metadataWindow::setupUI()
     QHBoxLayout *hbl = new QHBoxLayout();
 
     QVBoxLayout *vbl = new QVBoxLayout();
-    vbl->addLayout(title_label_layout);
     vbl->addLayout(artist_label_layout);
     vbl->addLayout(release_label_layout);
 
     hbl->addWidget(image_label);
     hbl->addLayout(vbl);
 
+    main_layout->addLayout(title_label_layout);
     main_layout->addLayout(hbl);
-    main_layout->addLayout(file_type_label_layout);
     main_layout->addLayout(status_label_layout);
 
     this->setLayout(main_layout);
@@ -166,24 +158,18 @@ void metadataWindow::initialise_track_object()
     track.playing = false;
     client_ip.clear();
     client_name.clear();
-    file_type.clear();
 }
 
 void metadataWindow::updateUI()
 {
-    cout << "Updating UI\n";
     title_label->setText(QString::fromStdString(track.title));
-    title_label->setFont(*standard_font);
+    title_label->setFont(*bigger_font);
+
     artist_label->setText(QString::fromStdString(track.artist));
     artist_label->setFont(*standard_font);
+    
     release_label->setText(QString::fromStdString(track.release));
     release_label->setFont(*standard_font);
-    
-    if (file_type.length() != 0) {
-        file_type_label->setText("Fichier " + QString::fromStdString(file_type));
-    } else {
-        file_type_label->setText("Streaming direct");
-    }
     
     if (client_name.length() != 0 && track.playing) {
         status_label->setText("Lecture depuis " + QString::fromStdString(client_name));
@@ -234,7 +220,7 @@ void metadataWindow::onData()
 
 void metadataWindow::dataReceived()
 {
-    cout << "\nProcessing new metadata ...\n";
+    //cout << "\nProcessing new metadata ...\n";
 
     if (pipe->atEnd()) {
         cout << " > No more data to read ...\n";
@@ -257,7 +243,7 @@ void metadataWindow::dataReceived()
     QImage base64_image;
     bool ret_pic = false;
 
-    cout << "Message: [" << message << "]\n";
+    //cout << "Message: [" << message << "]\n";
     int ret = sscanf(message,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
     
     // Get code and type strings
@@ -276,14 +262,14 @@ void metadataWindow::dataReceived()
         QString payload;
 
         if (length > 0) {
-            cout << " > Extracting data ..." << "\n";
+            //cout << " > Extracting data ..." << "\n";
 
             // get the next line, which should be a data tag
             QString line = pipe->readLine();
 
             if (line == "<data encoding=\"base64\">") {
                 // now, read in that big (possibly) base64 buffer
-                cout << " > Data is base64 buffer" << "\n";
+                //cout << " > Data is base64 buffer" << "\n";
 
                 QString line = pipe->readLine();
                 if (line.size() > 14) {
@@ -295,11 +281,11 @@ void metadataWindow::dataReceived()
                         ret_pic = base64_image.loadFromData(QByteArray::fromBase64(base64Data));
                     }
                 } else {
-                    cout << " > Looks like a bad payload" << "\n";
+                    //cout << " > Looks like a bad payload" << "\n";
                 }
             }
 
-            cout << " > Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
+            //cout << " > Got it decoded. Length of decoded string is " << payload.size() << " bytes.\n";
         }
        
         // this has more information about tags, which might be relevant:
@@ -313,9 +299,6 @@ void metadataWindow::dataReceived()
         } else if (code == 'minm') {
             track.title = payload.toStdString();
             //cout << "Title: " << payload.toStdString() << "\n";
-        } else if (code == 'asdt') {
-            file_type = payload.toStdString();
-            //cout << "File kind: " << payload.toStdString() << "\n";
         } else if (code == 'PICT' && ret_pic) {
             track.image = base64_image;
             //cout << "Picture received, length " << length << " bytes." << "\n";
@@ -333,7 +316,7 @@ void metadataWindow::dataReceived()
             cout << "Started playing" << "\n";
         } else if (code == 'pend') {
             track.playing = false;
-            //cout << "Stopped playing" << "\n";
+            cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
         } else {
@@ -341,7 +324,7 @@ void metadataWindow::dataReceived()
         }
 
     } else {
-        cout << "Could not decipher the message.\n";;
+        //cout << "Could not decipher the message.\n";;
     }
     
     pipe->flush();
