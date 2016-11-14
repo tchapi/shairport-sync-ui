@@ -48,13 +48,13 @@ void metadataWindow::setupUI()
 
     // Create Fonts
     standard_font = new QFont("Droid Sans");
-    standard_font->setPixelSize(12);
+    standard_font->setPixelSize(13);
 
     bigger_font = new QFont("Droid Sans");
     bigger_font->setPixelSize(18);
     
     em_font = new QFont("Droid Sans");
-    em_font->setPixelSize(12);
+    em_font->setPixelSize(18);
     em_font->setItalic(true);
     
     // Add cover image
@@ -72,9 +72,8 @@ void metadataWindow::setupUI()
     title_label_icon->setPixmap(note);
     title_label_icon->setFixedWidth(20);
 
-    title_label = new QLabel("Titre de la chanson, qui peut être long");
-    title_label->setStyleSheet("background-color:#333444;");
-    title_label->setFont(*standard_font);
+    title_label = new QLabel("N/A");
+    title_label->setFont(*em_font);
     title_label->setWordWrap(true);
 
     QHBoxLayout *title_label_layout = new QHBoxLayout();
@@ -87,9 +86,8 @@ void metadataWindow::setupUI()
     artist_label_icon->setPixmap(artist);
     artist_label_icon->setFixedWidth(20);
 
-    artist_label = new QLabel("Artiste");
-    artist_label->setStyleSheet("background-color:#765234;");
-    artist_label->setFont(*standard_font);
+    artist_label = new QLabel("N/A");
+    artist_label->setFont(*em_font);
     artist_label->setWordWrap(true);
 
     QHBoxLayout *artist_label_layout = new QHBoxLayout();
@@ -102,9 +100,8 @@ void metadataWindow::setupUI()
     release_label_icon->setPixmap(cd);
     release_label_icon->setFixedWidth(20);
 
-    release_label = new QLabel("Album");
-    release_label->setStyleSheet("background-color:#A34C87;");
-    release_label->setFont(*standard_font);
+    release_label = new QLabel("N/A");
+    release_label->setFont(*em_font);
     release_label->setWordWrap(true);
 
     QHBoxLayout *release_label_layout = new QHBoxLayout();
@@ -118,8 +115,7 @@ void metadataWindow::setupUI()
     file_type_label_icon->setPixmap(file);
     file_type_label_icon->setFixedWidth(20);
 
-    file_type_label = new QLabel("Fichier MP3");
-    file_type_label->setStyleSheet("background-color:#9345C1;");
+    file_type_label = new QLabel("N/A");
     file_type_label->setFixedHeight(30);
     file_type_label->setFont(*standard_font);
 
@@ -134,7 +130,6 @@ void metadataWindow::setupUI()
     status_label_icon->setFixedWidth(20);
 
     status_label = new QLabel("En attente de données ...");
-    status_label->setStyleSheet("background-color:#AC7623;");
     status_label->setFixedHeight(34);
     status_label->setFont(*bigger_font);
 
@@ -189,7 +184,7 @@ void metadataWindow::updateUI()
     }
     
     if (client_name.length() != 0 && track.playing) {
-        status_label->setText("En streaming depuis " + QString::fromStdString(client_name));
+        status_label->setText("Lecture depuis " + QString::fromStdString(client_name));
         status_label->setFont(*standard_font);
         QPixmap device(":/icons/yt");
         status_label_icon->setPixmap(device);
@@ -199,7 +194,7 @@ void metadataWindow::updateUI()
         QPixmap device(":/icons/yt");
         status_label_icon->setPixmap(device);
     } else if (client_ip.length() != 0 && track.playing) {
-        status_label->setText("En streaming depuis " + QString::fromStdString(client_ip));
+        status_label->setText("Lecture depuis " + QString::fromStdString(client_ip));
         status_label->setFont(*standard_font);
         QPixmap device(":/icons/device");
         status_label_icon->setPixmap(device);
@@ -208,6 +203,11 @@ void metadataWindow::updateUI()
         status_label->setFont(*standard_font);
         QPixmap device(":/icons/device");
         status_label_icon->setPixmap(device);
+    } else if (track.playing) {
+        status_label->setText("Lecture en cours");
+        status_label->setFont(*em_font);
+        QPixmap collection(":/icons/collection");
+        status_label_icon->setPixmap(collection);
     } else {
         status_label->setText("Pas de streaming en cours");
         status_label->setFont(*em_font);
