@@ -218,11 +218,13 @@ void metadataWindow::updateUI()
         status_label_icon->setPixmap(load_full);
     }
 
-    image->convertFromImage(track.image);
-    *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
+    if (!track.image.isNull()) {
+        image->convertFromImage(track.image);
+        *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
 
-    image_label->setPixmap(*image);
-    image_label->update();
+        image_label->setPixmap(*image);
+        image_label->update();
+    }
 
 }
 
@@ -329,7 +331,7 @@ void metadataWindow::dataReceived()
             //cout << "User Agent: " << payload.toStdString() << "\n";
         } else if (code == 'prms' || code =='pbeg') {
             track.playing = true;
-            //cout << "Started playing" << "\n";
+            cout << "Started playing" << "\n";
         } else if (code == 'pend') {
             track.playing = false;
             //cout << "Stopped playing" << "\n";
