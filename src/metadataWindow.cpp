@@ -204,31 +204,25 @@ void metadataWindow::updateUI()
         release_label->setFont(*standard_font);
     }
     
-    if (client_name.length() != 0 && track.playing) {
-        status_label->setFont(*standard_font);
-        SetTextToLabel(status_label, "Lecture depuis " + QString::fromStdString(client_name));
-        QPixmap device(":/icons/yt");
-        status_label_icon->setPixmap(device);
-    } else if (client_name.length() != 0) {
-        status_label->setFont(*standard_font);
-        SetTextToLabel(status_label, "En pause depuis " + QString::fromStdString(client_name));
-        QPixmap device(":/icons/yt");
-        status_label_icon->setPixmap(device);
-    } else if (client_ip.length() != 0 && track.playing) {
-        status_label->setFont(*standard_font);
-        SetTextToLabel(status_label, "Lecture depuis " + QString::fromStdString(client_ip));
-        QPixmap device(":/icons/device");
-        status_label_icon->setPixmap(device);
+    // Create the name
+    QString name = " en cours ...";
+    QPixmap icon(":/icons/collection");
+    if (client_name.length()) {
+        name = " depuis " + QString::fromStdString(client_name);
+        icon = QPixmap(":/icons/yt");
     } else if (client_ip.length() != 0) {
+        name = " depuis " + QString::fromStdString(client_ip);
+        icon = QPixmap(":/icons/device");
+    }
+
+    if (track.playing) {
         status_label->setFont(*standard_font);
-        SetTextToLabel(status_label, "En pause depuis " + QString::fromStdString(client_ip));
-        QPixmap device(":/icons/device");
-        status_label_icon->setPixmap(device);
-    } else if (track.playing) {
+        SetTextToLabel(status_label, "Lecture" + name);
+        status_label_icon->setPixmap(icon);
+    } else if (!track.pending) {
         status_label->setFont(*standard_font);
-        status_label->setText("Lecture en cours ...");
-        QPixmap collection(":/icons/collection");
-        status_label_icon->setPixmap(collection);
+        SetTextToLabel(status_label, "En pause");
+        status_label_icon->setPixmap(icon);
     } else if (track.pending) {
         QMovie *load = new QMovie(":/icons/load");
         status_label_icon->setMovie(load);
