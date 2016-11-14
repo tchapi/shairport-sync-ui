@@ -66,7 +66,7 @@ void metadataWindow::setupUI()
     title_em_font->setItalic(true);
     
     em_font = new QFont("Droid Sans");
-    em_font->setPixelSize(16);
+    em_font->setPixelSize(14);
     em_font->setItalic(true);
     
     // Add cover image
@@ -86,7 +86,7 @@ void metadataWindow::setupUI()
     title_label = new QLabel("N/A");
     title_label->setFont(*title_em_font);
     title_label->setFixedHeight(30);
-    title_label->setStyleSheet("background-color: #123456; padding-right:6px;");
+    title_label->setStyleSheet("/*background-color: #123456;*/ padding-right:6px;");
 
     QHBoxLayout *title_label_layout = new QHBoxLayout();
     title_label_layout->addWidget(title_label_icon);
@@ -102,7 +102,7 @@ void metadataWindow::setupUI()
     artist_label = new QLabel("N/A");
     artist_label->setFont(*em_font);
     artist_label->setWordWrap(true);
-    artist_label->setStyleSheet("background-color: #123456; padding-right:6px;");
+    artist_label->setStyleSheet("/*background-color: #123456;*/ padding-right:6px;");
 
     QHBoxLayout *artist_label_layout = new QHBoxLayout();
     artist_label_layout->addWidget(artist_label_icon);
@@ -117,7 +117,7 @@ void metadataWindow::setupUI()
     release_label = new QLabel("N/A");
     release_label->setFont(*em_font);
     release_label->setWordWrap(true);
-    release_label->setStyleSheet("background-color: #123456; padding-right:6px;");
+    release_label->setStyleSheet("/*background-color: #123456;*/ padding-right:6px;");
 
     QHBoxLayout *release_label_layout = new QHBoxLayout();
     release_label_layout->addWidget(release_label_icon);
@@ -142,7 +142,7 @@ void metadataWindow::setupUI()
 
     // Make the whole layout
     QVBoxLayout *main_layout = new QVBoxLayout();
-    main_layout->setContentsMargins(2,10,2,12);
+    main_layout->setContentsMargins(4,10,4,12);
 
     QHBoxLayout *hbl = new QHBoxLayout();
 
@@ -351,6 +351,7 @@ void metadataWindow::dataReceived()
             //cout << "Started playing" << "\n";
         } else if (code == 'pend') {
             track.playing = false;
+            track.image = base64_image; // Clear the image
             //cout << "Stopped playing" << "\n";
         } else if (type=='ssnc') {
             //cout << "SSNC Stuff : " << typestring << "/" << codestring << " : " << payload.toStdString() << "\n";
