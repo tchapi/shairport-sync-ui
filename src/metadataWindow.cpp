@@ -241,14 +241,12 @@ void metadataWindow::updateUI()
 
     // Only update image label when necessary
     if (track.changeImage == true) {
-        cout << "setting new image \n" ;
         image->convertFromImage(track.image);
         *image = image->scaled(*size, Qt::KeepAspectRatioByExpanding);
         image_label->setPixmap(*image);
         track.changeImage = false;
         image_label->update();
     } else if (track.resetImage == true) {
-        cout << "setting default image \n";
         image_label->setPixmap(*default_image);
         track.resetImage = false;
         image_label->update();

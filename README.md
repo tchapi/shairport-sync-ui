@@ -1,7 +1,7 @@
 # Shairport-sync UI
 A simple metadata UI for [shairport-sync](https://github.com/mikebrady/shairport-sync), in C++ using Qt4.
 
-See [this article](https://foobarflies.io/shairport-is-back) for further reference.
+See [this article](http://www.foobarflies.io/shairport-is-back) for further reference.
 
 _Based on [shairport-sync-metadata-reader](https://github.com/mikebrady/shairport-sync-metadata-reader) by [Mike Brady](https://github.com/mikebrady)_
 
