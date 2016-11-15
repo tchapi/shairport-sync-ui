@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 using std::string;
 using std::cout;
@@ -37,7 +39,7 @@ class metadataWindow : public QWidget
     void onData();
 
   private:
-    static const char *metadata_file;
+    const char *metadata_file;
 
     QString base64_encode(QString string);
     QString base64_decode(QString string);

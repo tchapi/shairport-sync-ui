@@ -23,33 +23,23 @@ static void SetTextToLabel(QLabel *label, QString text)
 
 metadataWindow::metadataWindow(QWidget *parent) : QWidget(parent)
 {
-    const char *metadata_file = "/tmp/shairport-sync-metadata";
-
     // Initialize the Track object with empty strings and the like
-    initialise_track_object();
+    this->initialise_track_object();
     
     this->setupUI();
+    
+    metadata_file = "/tmp/shairport-sync-metadata";
 
-    // Connect to the metadata pipe
-    // TODO fix "r" flag when pipe has no writer, the call is blocking
-    FILE *fd = fopen(metadata_file, "r");
-    if (fd==NULL)
-    {
-        cout << "No metadata file found, testing UI." << "\n";
-    } else {
-        // Use for actual reads
-        pipe = new QTextStream(fd);
+    int fd = open(metadata_file, O_NONBLOCK | O_RDONLY);
 
-        // Use for events when the pipe is filled
-        streamReader = new QSocketNotifier(fileno(fd), QSocketNotifier::Read, qApp);
-        QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
-        streamReader->setEnabled(true);
+    // Use for events when the pipe is filled
+    streamReader = new QSocketNotifier(fd, QSocketNotifier::Read, qApp);
+    QObject::connect(streamReader, SIGNAL(activated(int)), this, SLOT(onData()));
+    streamReader->setEnabled(true);
 
-        // Now disable cursor
-        QApplication::setOverrideCursor(Qt::BlankCursor);
-    }
+    // Now disable cursor
+    QApplication::setOverrideCursor(Qt::BlankCursor);
 }
-
 
 void metadataWindow::setupUI()
 {
@@ -262,6 +252,15 @@ void metadataWindow::onData()
 void metadataWindow::dataReceived()
 {
     //cout << "\nProcessing new metadata ...\n";
+
+    if (pipe == NULL) {
+        FILE *fd = fopen(metadata_file, "r");
+        if (fd == NULL) {
+            cout << "Could not open metadata file" << "\n";
+            return;
+        }
+        pipe = new QTextStream(fd);
+    }
 
     if (pipe->atEnd()) {
         //cout << " > No more data to read ...\n";
