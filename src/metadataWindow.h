@@ -26,6 +26,7 @@ struct Track {
     bool resetImage;
     bool playing;
     bool pending;
+    bool resetTrack;
 };
 
 class metadataWindow : public QWidget

@@ -167,6 +167,7 @@ void metadataWindow::initialise_track_object()
     track.pending = true;
     track.changeImage = false;
     track.resetImage = false;
+    track.resetTrack = false;
     client_ip.clear();
     client_name.clear();
 }
@@ -242,6 +243,25 @@ void metadataWindow::updateUI()
         image_label->update();
     }
 
+    // When receiving a user agent, it generally means that the
+    // client has changed
+    if (track.resetTrack == true) {
+        track.title.clear();
+        track.artist.clear();
+        track.release.clear();
+        track.resetImage = true;
+        track.resetTrack = false;
+    }
+
+    string prefix("AirPlay/");
+    if (client_name.substr(0, prefix.size()) == prefix) {
+        title_label->setFont(*title_em_font);
+        title_label->setText("Lecture directe AirPlay");
+        artist_label->setFont(*em_font);
+        artist_label->setText("N/A");
+        release_label->setFont(*em_font);
+        release_label->setText("N/A");
+    }
 }
 
 void metadataWindow::updateBrightness()
@@ -355,12 +375,15 @@ void metadataWindow::dataReceived()
             //cout << "Picture received, length " << length << " bytes." << "\n";
         } else if (code == 'clip') {
             client_ip = payload.toStdString();
+            track.resetTrack = true;
             //cout << "Client's IP: " << payload.toStdString() << "\n";
         } else if (code == 'snam') {
             client_name = payload.toStdString();
+            track.resetTrack = true;
             //cout << "Device Name: " << payload.toStdString() << "\n";
         } else if (code == 'snua') {
             client_name = payload.toStdString();
+            track.resetTrack = true;
             //cout << "User Agent: " << payload.toStdString() << "\n";
         } else if (code == 'pfls' || code =='pbeg') {
             // FLUSH or BEGIN
