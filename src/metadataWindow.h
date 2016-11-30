@@ -46,6 +46,7 @@ class metadataWindow : public QWidget
 
     void setupUI();
     void updateUI();
+    void updateBrightness();
 
     void initialise_track_object();
     void dataReceived();

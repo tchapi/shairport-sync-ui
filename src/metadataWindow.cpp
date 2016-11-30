@@ -244,6 +244,16 @@ void metadataWindow::updateUI()
 
 }
 
+void metadataWindow::updateBrightness()
+{
+    if (!track.playing && !track.pending) {
+        system("echo 10 | sudo tee /sys/class/backlight/4dpi-32-pwm/brightness > /dev/null");
+        // cout << "Shutting screen down" << "\n";
+    } else {
+        system("echo 80 | sudo tee /sys/class/backlight/4dpi-32-pwm/brightness > /dev/null");
+    }
+}
+
 void metadataWindow::onData()
 {
     emit dataReceived();
@@ -380,6 +390,7 @@ void metadataWindow::dataReceived()
         }
 
         updateUI();
+        updateBrightness();
 
     } else {
         //cout << "Could not decipher the message.\n";;
